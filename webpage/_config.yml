@@ -1,0 +1,7 @@
+title: Wi-Fi Stepper
+source: src
+destination: build
+#apiurl: http://10.1.10.16
+#wsurl: ws://10.1.10.16:81
+apiurl: http://wsx100.local
+wsurl: ws://wsx100.local:81

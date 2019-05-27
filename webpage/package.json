@@ -1,0 +1,36 @@
+{
+  "name": "wifistepper",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "autoprefixer": "^9.1.5",
+    "gulp": "^3.9.1",
+    "gulp-cheerio": "^0.6.3",
+    "gulp-connect": "^5.6.1",
+    "gulp-gzip": "^1.4.2",
+    "gulp-inline-source": "^3.2.0",
+    "gulp-minify-html": "^1.0.6",
+    "gulp-rename": "^1.4.0",
+    "postcss": "^7.0.5",
+    "rollup": "^0.66.4",
+    "rollup-plugin-babel": "^4.0.3",
+    "uglify-es": "^3.3.9",
+    "uglifycss": "0.0.29",
+    "uncss": "^0.16.2"
+  }
+}

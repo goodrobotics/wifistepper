@@ -1,0 +1,1089 @@
+---
+title: Settings
+menu: settings
+css:
+    - bulma-tooltip
+    - bulma-checkradio
+    - bulma-switch
+    - bulma-divider
+animate: true
+layout: default
+---
+{% include helptext.html %}
+<h1 class="title is-3">{% mdicon lock %}Settings</h1>
+<div id="app" v-cloak>
+    <div class="box properties">
+        {% raw %}
+        <div class="level">
+            <div class="level-item">
+                <span><span class="entry">Hostname:</span> <span class="value">{{ service.hostname }}</span></span>
+            </div>
+            <div class="level-item">
+                <span><span class="entry">IP:</span> <span class="value">{{ wifi.ip }}</span></span>
+            </div>
+        </div>
+        {% endraw %}
+    </div>
+    <div class="message">
+        <div class="message-header"><span class="title is-5">{% mdicon wifi %}Wifi Connection</span></div>
+        <div class="message-body">
+            <div style="margin-left: auto; margin-right: auto; max-width: 700px;">
+                <div class="title is-4 has-text-centered mode-select">
+                    Mode:
+                    <span class="select">
+                        <select v-model="wifi.mode">
+                            <option value="accesspoint">Access Point</option>
+                            <option value="station">Station</option>
+                            <option value="off">Off</option>
+                        </select>
+                    </span>
+                </div>
+                <div v-if="wifi.mode == 'accesspoint'">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">SSID</label></div>
+                        <div class="field-body">
+                            <div class="field">
+                                <span class="control is-expanded"><input class="input" type="text" placeholder="Network Name" maxlength="31" v-model="wifi.accesspoint_ssid" /></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal is-spaced-mobile">
+                        <div class="field-label is-normal"><label class="label">Password</label></div>
+                        <div class="field-body">
+                            <div class="field">
+                                <span class="control is-expanded">
+                                    <input class="input" type="text" placeholder="WPA2-PSK Password" maxlength="63" v-model="wifi.accesspoint_password" v-bind:disabled="!wifi.accesspoint_encryption" />
+                                </span>
+                            </div>
+                            <div class="field">
+                                <span class="control">
+                                    <input class="is-checkradio has-background-color is-white" id="wifi-password-enable" type="checkbox" v-model="wifi.accesspoint_encryption" />
+                                    <label class="is-checkradio-enable" for="wifi-password-enable"><strong>Enabled</strong></label>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="is-divider" data-content="Advanced"></div>
+                    <div class="field is-horizontal">
+                        <div class="field-label"></div>
+                        <div class="field-body">
+                            <div class="field">
+                                <span class="control">
+                                    <input class="is-checkradio has-background-color is-white" id="wifi-hidden-enable" type="checkbox" v-model="wifi.accesspoint_hidden" />
+                                    <label class="is-checkradio-enable" for="wifi-hidden-enable"><strong>Hidden SSID</strong></label>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal is-spaced-mobile">
+                        <div class="field-label is-normal"><label class="label">Channel</label></div>
+                        <div class="field-body">
+                            <div class="field">
+                                <span class="control">
+                                    <input class="input" style="width: 75px;" type="number" min="1" max="13" step="1" v-model="wifi.accesspoint_channel" />
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-else-if="wifi.mode == 'station'">
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">SSID</label></div>
+                        <div class="field-body">
+                            <div class="field has-addons">
+                                <span class="control" style="width: 100%;">
+                                    <div class="select is-fullwidth">
+                                        <select v-model="wifi.station_ssid">
+                                            {% raw %}<option v-for="network in wifi.detected" v-bind:value="network.ssid">{{ network.ssid }}</option>{% endraw %}
+                                        </select>
+                                    </div>
+                                </span>
+                                <span class="control"><button class="button is-primary" style="border-color: #666;" v-on:click="scanwifi">{% mdicon refresh, .baseline, .inline %}</button></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="wifi.station_encryption" class="field is-horizontal is-spaced-mobile">
+                        <div class="field-label is-normal">
+                            <label class="label">Password</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field">
+                                <span class="control"><input class="input" type="text" placeholder="Empty" maxlength="63" v-model="wifi.station_password" /></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="is-divider" data-content="Advanced"></div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">IP Address</label></div>
+                        <div class="field-body">
+                            <div class="field">
+                                <span class="control"><input class="input" type="text" v-bind:placeholder="wifi.station_forceip == '' && wifi.station_forcesubnet == '' && wifi.station_forcegateway == ''? 'Auto' : 'Required'" maxlength="15" v-model="wifi.station_forceip" /></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Subnet</label></div>
+                        <div class="field-body">
+                            <div class="field">
+                                <span class="control"><input class="input" type="text" v-bind:placeholder="wifi.station_forceip == '' && wifi.station_forcesubnet == '' && wifi.station_forcegateway == ''? 'Auto' : 'Required'" maxlength="15" v-model="wifi.station_forcesubnet" /></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal"><label class="label">Gateway</label></div>
+                        <div class="field-body">
+                            <div class="field">
+                                <span class="control"><input class="input" type="text" v-bind:placeholder="wifi.station_forceip == '' && wifi.station_forcesubnet == '' && wifi.station_forcegateway == ''? 'Auto' : 'Required'" maxlength="15" v-model="wifi.station_forcegateway" /></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field is-horizontal is-spaced-mobile">
+                        <div class="field-label is-normal"><label class="label">Revert AP</label></div>
+                        <div class="field-body">
+                            <div class="field">
+                                <span class="control">
+                                    <input class="is-checkradio has-background-color is-white" id="wifi-revertap-enable" type="checkbox" v-model="wifi.station_revertap" />
+                                    <label class="is-checkradio-enable" for="wifi-revertap-enable"><strong>Enabled</strong></label>
+                                </span>
+                                <span class="control"><button class="button tooltip is-tooltip-left is-tooltip-multiline" style="background-color: #333; border-width: 0px;" data-tooltip="{{ help_revertap }}">{% mdicon help-circle, .baseline, .inline %}</button></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="field has-text-centered">
+                    <span class="control"><button class="button is-primary is-medium" v-on:click="writewifi">Apply</button></span>
+                </div>
+                <div class="modal" v-bind:class="{'is-active': wifi.changemodal}">
+                    <div class="modal-background" v-on:click="wifi.changemodal = false"></div>
+                    <div class="modal-content">
+                        <div class="box has-text-centered">
+                            <div class="title is-4">{% mdicon sync-alert %}Wifi Settings Changed</div>
+                            <div>Rebooting device. You may need to modify your network connections and reconnect.</div>
+                        </div>
+                    </div>
+                    <button class="modal-close is-large" v-on:click="wifi.changemodal = false"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="message">
+        <div class="message-header"><span class="title is-5">{% mdicon application %}Browser &amp; Services</span></div>
+        <div class="message-body">
+            <div style="margin-left: auto; margin-right: auto; max-width: 700px;">
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal"><label class="label">Hostname</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control"><input class="input" type="text" placeholder="Unknown" maxlength="23" v-model="service.hostname" /></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">mDNS</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control">
+                                <input class="is-checkradio has-background-color is-white" id="service-mdns-enable" type="checkbox" v-model="service.mdns_enabled" />
+                                <label class="is-checkradio-enable" for="service-mdns-enable"><strong>Enabled</strong></label>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">HTTP</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control">
+                                <input class="is-checkradio has-background-color is-white" id="service-http-enable" type="checkbox" v-model="service.http_enabled" />
+                                <label class="is-checkradio-enable" for="service-http-enable"><strong>Enabled</strong></label>
+                            </span>
+                            <span v-if="!service.http_enabled" class="help is-danger"><strong>Warning:</strong> You will not be able to re-enable access through the http interface. To reset your board (and revert to factory default settings), see <a class="link" href="/documentation#hardware-reset"><strong>Hardware Reset</strong></a>.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">HTTP Auth</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control is-expanded"><input class="input" type="text" placeholder="Username" maxlength="63" v-model="service.auth_username" v-bind:disabled="!service.auth_enabled" /></span>
+                        </div>
+                        <div class="field">
+                            <span class="control is-expanded"><input class="input" type="text" placeholder="Password" maxlength="63" v-model="service.auth_password" v-bind:disabled="!service.auth_enabled" /></span>
+                        </div>
+                        <div class="field">
+                            <span class="control">
+                                <input class="is-checkradio has-background-color is-white" id="service-auth-enable" type="checkbox" v-model="service.auth_enabled" />
+                                <label class="is-checkradio-enable" for="service-auth-enable"><strong>Enabled</strong></label>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">Low Level Interface</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control">
+                                <span class="select">
+                                    <select v-on:change="lowcomupdate">
+                                        <option value="disabled" v-bind:selected="!service.lowcom_enabled">Disabled</option>
+                                        <option value="std" v-bind:selected="service.lowcom_enabled && service.lowcom_std_enabled && !service.lowcom_crypto_enabled">Standard Only</option>
+                                        <option value="crypto" v-bind:selected="service.lowcom_enabled && !service.lowcom_std_enabled && service.lowcom_crypto_enabled">Crypto Only</option>
+                                        <option value="both" v-bind:selected="service.lowcom_enabled && service.lowcom_std_enabled && service.lowcom_crypto_enabled">Standard + Crypto</option>
+                                    </select>
+                                </span>
+                            </span>
+                            <span v-if="service.lowcom_enabled && service.lowcom_crypto_enabled && !crypto.provisioned" class="help is-danger"><strong>Warning:</strong> Crypto Authentication service will not be available until the chip is <strong>Provisioned</strong>.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">Arduino OTA</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control is-expanded"><input class="input" type="text" placeholder="No Password" maxlength="63" v-model="service.ota_password" v-bind:disabled="!service.ota_enabled" /></span>
+                        </div>
+                        <div class="field">
+                            <span class="control">
+                                <input class="is-checkradio has-background-color is-white" id="service-ota-enable" type="checkbox" v-model="service.ota_enabled" />
+                                <label class="is-checkradio-enable" for="service-ota-enable"><strong>Enabled</strong></label>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="field has-text-centered">
+                    <span class="control"><button class="button is-primary is-medium" v-on:click="writeservice">Apply</button></span>
+                </div>
+                <div class="modal" v-bind:class="{'is-active': service.changemodal}">
+                    <div class="modal-background" v-on:click="service.changemodal = false"></div>
+                    <div class="modal-content">
+                        <div class="box has-text-centered">
+                            <div class="title is-4">{% mdicon sync-alert %}Service Settings Changed</div>
+                            <div>Rebooting device. You may need to refresh the page to see changes.</div>
+                        </div>
+                    </div>
+                    <button class="modal-close is-large" v-on:click="service.changemodal = false"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="message">
+        <div class="message-header"><span class="title is-5">{% mdicon cloud %}MQTT</span></div>
+        <div class="message-body">
+            <div style="margin-left: auto; margin-right: auto; max-width: 700px;">
+                <div class="level status-tags">
+                    <div class="level-left">
+                        <div class="level-item subtitle is-5">Status:</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level">
+                            <div class="level-item">
+                                <span class="tag is-medium" v-if="!service.mqtt_enabled">Not Enabled</span>
+                                <span class="tag is-medium is-success" v-else-if="service.state.mqtt_connected">Connected</span>
+                                <span class="tag is-medium is-error" v-else>Not Connected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal"></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control">
+                                <input class="is-checkradio has-background-color is-white" id="service-mqtt-enable" type="checkbox" v-model="service.mqtt_enabled" />
+                                <label class="is-checkradio-enable" for="service-mqtt-enable"><strong>Enabled</strong></label>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">Server</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control"><input class="input" type="text" placeholder="mqtt.example.com" maxlength="255" v-model="service.mqtt_server" /></span>
+                        </div>
+                        <div class="field has-addons" style="width: 10rem;">
+                            <span class="control"><span class="button is-static">Port</span></span>
+                            <span class="control"><input class="input" type="text" placeholder="port" maxlength="5" v-model="service.mqtt_port" /></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">Auth</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control is-expanded"><input class="input" type="text" placeholder="Username" maxlength="63" v-model="service.mqtt_username" v-bind:disabled="!service.mqtt_auth_enabled" /></span>
+                        </div>
+                        <div class="field">
+                            <span class="control is-expanded"><input class="input" type="text" placeholder="Password" maxlength="63" v-model="service.mqtt_password" v-bind:disabled="!service.mqtt_auth_enabled" /></span>
+                        </div>
+                        <div class="field">
+                            <span class="control">
+                                <input class="is-checkradio has-background-color is-white" id="service-mqtt-auth-enable" type="checkbox" v-model="service.mqtt_auth_enabled" />
+                                <label class="is-checkradio-enable" for="service-mqtt-auth-enable"><strong>Use&nbsp;Auth</strong></label>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">State Topic</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control is-expanded"><input class="input" type="text" placeholder="Topic" maxlength="255" v-model="service.mqtt_state_topic" /></span>
+                        </div>
+                        <div class="field has-addons" style="width: 20rem;">
+                            <span class="control"><span class="button is-static">Every</span></span>
+                            <span class="control"><input class="input" type="number" min="0" step="5" v-model="service.mqtt_state_publish_period" /></span>
+                            <span class="control"><span class="button is-static">Secs</span></span>
+                        </div>
+                        <span class="control"><button class="button tooltip is-tooltip-left is-tooltip-multiline" style="background-color: #333; border-width: 0px;" data-tooltip="{{ help_mqtt_state_topic }}">{% mdicon help-circle, .baseline, .inline %}</button></span>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">Command Topic</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control is-expanded"><input class="input" type="text" placeholder="Topic" maxlength="255" v-model="service.mqtt_command_topic" /></span>
+                        </div>
+                        <span class="control"><button class="button tooltip is-tooltip-left is-tooltip-multiline" style="background-color: #333; border-width: 0px;" data-tooltip="{{ help_mqtt_command_topic }}">{% mdicon help-circle, .baseline, .inline %}</button></span>
+                    </div>
+                </div>
+                <hr />
+                <div class="field has-text-centered">
+                    <span class="control"><button class="button is-primary is-medium" v-on:click="writemqtt">Apply</button></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="message">
+        <div class="message-header"><span class="title is-5">{% mdicon lan %}Daisy Chaining</span></div>
+        <div class="message-body">
+            <div style="margin-left: auto; margin-right: auto; max-width: 700px;">
+                <div class="notification has-text-centered" style="padding: 10px; background-color: #666;">
+                    <p><strong>Daisy Chaining</strong> allows you to connect multiple boards together over high speed serial bus and control them through a single interface. See <a class="link" href="/documentation#daisy-chain"><strong>Daisy Chain Documentation</strong></a> for more information and how to connect the serial cables.</p>
+                </div>
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal"></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control">
+                                <input class="is-checkradio has-background-color is-white" id="daisy-enable" type="checkbox" v-model="daisy.enabled" />
+                                <label class="is-checkradio-enable" for="daisy-enable"><strong>Enabled</strong></label>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"></div>
+                    <div class="field-body">
+                        <div class="field has-addons">
+                            <span class="control">
+                                <span class="button is-label">
+                                    <input class="switch is-rtl" id="daisy-master" type="checkbox" v-model="daisy.master" />
+                                    <label class="is-switch-label" for="daisy-master" style="padding-right: 70px;">Master</label>
+                                </span>
+                            </span>
+                            <span class="control">
+                                <span class="button is-label" style="border-left-width: 0px; border-right-width: 1px;">
+                                    <label class="is-switch-label" for="daisy-master">Slave</label>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile" v-if="daisy.master">
+                    <div class="field-label is-normal"></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control">
+                                <input class="is-checkradio has-background-color is-white" id="daisy-slavewifioff" type="checkbox" v-model="daisy.slavewifioff" />
+                                <label class="is-checkradio-enable" for="daisy-slavewifioff"><strong>Turn off Slave Wifi</strong></label>
+                            </span>
+                            <span class="control"><button class="button tooltip is-tooltip-left is-tooltip-multiline" style="background-color: #333; border-width: 0px;" data-tooltip="{{ help_slavewifioff }}">{% mdicon help-circle, .baseline, .inline %}</button></span>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="field has-text-centered">
+                    <span class="control"><button class="button is-primary is-medium" v-on:click="writedaisy">Apply</button></span>
+                </div>
+                <div class="modal" v-bind:class="{'is-active': daisy.changemodal}">
+                    <div class="modal-background" v-on:click="daisy.changemodal = false"></div>
+                    <div class="modal-content">
+                        <div class="box has-text-centered">
+                            <div class="title is-4">{% mdicon sync-alert %}Daisy Chaining Settings Changed</div>
+                            <div>Rebooting device. You may need to refresh the page to see changes.</div>
+                        </div>
+                    </div>
+                    <button class="modal-close is-large" v-on:click="daisy.changemodal = false"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="message">
+        <div class="message-header"><span class="title is-5">{% mdicon key %}Crypto Authentication</span></div>
+        <div class="message-body">
+            <div style="margin-left: auto; margin-right: auto; max-width: 700px;">
+                <div class="level status-tags">
+                    <div class="level-left">
+                        <div class="level-item subtitle is-5">Status:</div>
+                    </div>
+                    <div class="level-item">
+                        <div class="level">
+                            <div class="level-item"><span class="tag is-medium" v-bind:class="{'is-error': crypto.fault}">Fault</span></div>
+                            <div class="level-item">
+                                <span class="tag is-medium is-success" v-if="crypto.probed">Probed</span>
+                                <span class="tag is-medium is-error" v-else>Not Probed</span>
+                            </div>
+                            <div class="level-item">
+                                <span class="tag is-medium is-success" v-if="crypto.available">Available</span>
+                                <span class="tag is-medium is-error" v-else>Not Available</span>
+                            </div>
+                            <div class="level-item">
+                                <span class="tag is-medium" v-if="crypto.provisioned">Provisioned</span>
+                                <span class="tag is-medium is-info" v-else>Not Provisioned</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="notification is-danger has-text-centered animated fadeInDown" style="padding: 10px;" v-if="crypto.errorpop">
+                    <p>{% raw %}<strong>Error:</strong> {{ crypto.errorpop }}{% endraw %}</p>
+                </div>
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal"><label class="label">Master Key</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control is-expanded">
+                                <input class="input" type="text" placeholder="Master Key" v-model="crypto.master" v-bind:disabled="!crypto.available" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">Auth Key</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control is-expanded">
+                                <input class="input" type="text" placeholder="Auth Key" v-model="crypto.key" v-bind:disabled="!crypto.available" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="field has-text-centered">
+                    <span class="control">
+                        <button class="button is-primary is-medium" v-bind:disabled="!crypto.available" v-on:click="writeprovision" v-if="!crypto.provisioned">Provision</button>
+                        <button class="button is-primary is-medium" v-bind:disabled="!crypto.available" v-on:click="writecrypto" v-else>Update Key</button>
+                    </span>
+                </div>
+                <div class="modal" v-bind:class="{'is-active': crypto.provisionmodal}">
+                    <div class="modal-background" v-on:click="crypto.provisionmodal = false"></div>
+                    <div class="modal-content">
+                        <div class="box">
+                            <div class="title is-4">{% mdicon lock-alert %}Provision Warning</div>
+                            <div style="color: #ccc;">
+                                <p>You are about to provision the Crypto Chip on the Wi-Fi Stepper. This is a write-once operation that will permanently encode the <strong style="color: #fff;">Master Key</strong> on the device in way that cannot be retrieved or changed. It is <strong style="color: #fff;">strongly</strong> recommended that you write down the Master Key <span class="tag is-medium is-family-code" style="color: #c00; font-weight: bold; margin-left: 5px; margin-right: 5px;">{% raw %}{{ crypto.master }}{% endraw %}</span> and secure it for future reference.</p>
+                                <p>The <strong style="color: #fff;">Auth Key</strong> is then locked behind the Master Key and may only be changed by knowing the Master Key. During runtime operation, the <strong style="color: #fff;">Auth Key</strong> is used to authenticate connected clients.</p>
+                                <p>In order to have a truly secured device, you must additionally disable the services <strong style="color: #fff;">HTTP</strong>, <strong style="color: #fff;">MQTT</strong>,  <strong style="color: #fff;">Arduino OTA</strong>, and any other unsecured connection/programming method (as it would still be possible to connect using these unsecured methods).</p>
+                                <p>Crypto Authentication only validates clients ability to send commands (it does <strong style="color: #fff;">not</strong> encrypt communication). With physical access to the device, an attacker could still reprogram or reconfigure the device to bypass security features. When undergoing a <strong>Factory Reset</strong> (either by software or hardware pushbutton on the device), the Crypto Chip will remain provisioned and Master Key and Auth Key will remain inaccessible.</p>
+                                <p>For more info, visit <a class="link" href="https://www.wifistepper.com/crypto-authentication.html" target="_blank">wifistepper.com/crypto-authentication.html</a></p>
+                            </div>
+                            <hr />
+                            <div class="has-text-centered">
+                                <button class="button is-primary is-medium" v-on:click="crypto.provisionmodal = false">Cancel</button>
+                                <button class="button is-primary is-medium is-info" v-on:click="crypto.provisionmodal = false; writecrypto()">Continue and Provision</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="modal-close is-large" v-on:click="crypto.provisionmodal = false"></button>
+                </div>
+                <div class="modal" v-bind:class="{'is-active': crypto.changemodal}">
+                    <div class="modal-background" v-on:click="crypto.changemodal = false"></div>
+                    <div class="modal-content">
+                        <div class="box has-text-centered">
+                            <div class="title is-4">{% mdicon sync-alert %}Crypto Authentication Settings Changed</div>
+                            <div>Rebooting device. You may need to refresh the page to see changes.</div>
+                        </div>
+                    </div>
+                    <button class="modal-close is-large" v-on:click="crypto.changemodal = false"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="message">
+        <div class="message-header"><span class="title is-5">{% mdicon shield %}Security Analysis &amp; Recommendations</span></div>
+        <div class="message-body">
+            <div style="margin-left: auto; margin-right: auto; max-width: 700px;">
+                <div class="notification has-text-centered" style="padding: 10px; background-color: #666;">
+                    <p v-if="service.security == 'none'">To view security recommendations choose the desired security level.</p>
+                    <p v-if="service.security == 'medium'">With <strong>Medium</strong> security, you require some level of authentication, however the device is not in a hostile environment with potential attackers present or in a security-critical application.</p>
+                    <p v-if="service.security == 'high'">Under <strong>High</strong> security, only authorized clients with proper credentials can send commands. Even if an attacker could gain physical access and compromise a device, the keys cannot be read from that device. The attack is isolated to the device and other units using the same key are not compromised.</p>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal" style="padding-top: 12px;"><label class="label title is-5">Security Level</label></div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control">
+                                <span class="select is-medium">
+                                    <select v-model="service.security" v-on:change="writesecurity">
+                                        <option value="none">None</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <table id="security-table" class="table is-narrow is-fullwidth" v-if="service.security != 'none'">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th class="has-text-centered">Current Status</th>
+                            <th class="has-text-centered">Recommendation</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tr>
+                        <td>Wifi Network</td>
+                        <td class="has-text-centered" v-bind:class="{'is-issue': security_warn_wifi}">
+                            <span v-if="wifi.mode == 'off'">Off</span>
+                            <span v-else-if="(wifi.mode == 'accesspoint' && !wifi.accesspoint_encryption) || (wifi.mode == 'station' && !wifi.station_encryption)">No Password</span>
+                            <span v-else>Password</span>
+                            <span v-if="wifi.mode == 'accesspoint' && wifi.accesspoint_hidden">&nbsp;&amp; Hidden</span>
+                        </td>
+                        <td class="has-text-centered">{% raw %}{{ service.security_matrix[service.security]['wifi'] }}{% endraw %}</td>
+                        <td class="title is-3"><span v-if="security_warn_wifi">{% mdicon alert-circle, #f90 %}</span><span v-else>{% mdicon check-circle, #093 %}</span></td>
+                    </tr>
+                    <tr v-if="wifi.mode == 'station'">
+                        <td>Revert AP</td>
+                        <td class="has-text-centered" v-bind:class="{'is-issue': security_warn_revertap}">{% raw %}{{ wifi.station_revertap? 'On' : 'Off' }}{% endraw %}</td>
+                        <td class="has-text-centered">{% raw %}{{ service.security_matrix[service.security]['revertap'] }}{% endraw %}</td>
+                        <td class="title is-3"><span v-if="security_warn_revertap">{% mdicon alert-circle, #f90 %}</span><span v-else>{% mdicon check-circle, #093 %}</span></td>
+                    </tr>
+                    <tr>
+                        <td>mDNS</td>
+                        <td class="has-text-centered" v-bind:class="{'is-issue': security_warn_mdns}">{% raw %}{{ service.mdns_enabled? 'On' : 'Off' }}{% endraw %}</td>
+                        <td class="has-text-centered">{% raw %}{{ service.security_matrix[service.security]['mdns'] }}{% endraw %}</td>
+                        <td class="title is-3"><span v-if="security_warn_mdns">{% mdicon alert-circle, #f90 %}</span><span v-else>{% mdicon check-circle, #093 %}</span></td>
+                    </tr>
+                    <tr>
+                        <td>HTTP</td>
+                        <td class="has-text-centered" v-bind:class="{'is-issue': security_warn_http}">
+                            <span v-if="!service.http_enabled">Off</span>
+                            <span v-else-if="service.auth_enabled">Auth</span>
+                            <span v-else>Open</span>
+                        </td>
+                        <td class="has-text-centered">{% raw %}{{ service.security_matrix[service.security]['http'] }}{% endraw %}</td>
+                        <td class="title is-3"><span v-if="security_warn_http">{% mdicon alert-circle, #f90 %}</span><span v-else>{% mdicon check-circle, #093 %}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Low Level Interface</td>
+                        <td class="has-text-centered" v-bind:class="{'is-issue': security_warn_lowcom}">
+                            <span v-if="!service.lowcom_enabled">Off</span>
+                            <span v-else-if="service.lowcom_std_enabled && !service.lowcom_crypto_enabled">Standard Only</span>
+                            <span v-else-if="!service.lowcom_std_enabled && service.lowcom_crypto_enabled">Crypto Only</span>
+                            <span v-else-if="service.lowcom_std_enabled && service.lowcom_crypto_enabled">Standard + Crypto</span>
+                        </td>
+                        <td class="has-text-centered">{% raw %}{{ service.security_matrix[service.security]['lowcom'] }}{% endraw %}</td>
+                        <td class="title is-3"><span v-if="security_warn_lowcom">{% mdicon alert-circle, #f90 %}</span><span v-else>{% mdicon check-circle, #093 %}</span></td>
+                    </tr>
+                    <tr>
+                        <td>Arduino OTA</td>
+                        <td class="has-text-centered" v-bind:class="{'is-issue': security_warn_ota}">{% raw %}{{ service.ota_enabled? 'On' : 'Off' }}{% endraw %}</td>
+                        <td class="has-text-centered">{% raw %}{{ service.security_matrix[service.security]['ota'] }}{% endraw %}</td>
+                        <td class="title is-3"><span v-if="security_warn_ota">{% mdicon alert-circle, #f90 %}</span><span v-else>{% mdicon check-circle, #093 %}</span></td>
+                    </tr>
+                    <tr>
+                        <td>MQTT</td>
+                        <td class="has-text-centered" v-bind:class="{'is-issue': security_warn_mqtt}">
+                            <span v-if="!service.mqtt_enabled">Off</span>
+                            <span v-else-if="service.mqtt_auth_enabled">Password</span>
+                            <span v-else>Open</span>
+                        </td>
+                        <td class="has-text-centered">{% raw %}{{ service.security_matrix[service.security]['mqtt'] }}{% endraw %}</td>
+                        <td class="title is-3"><span v-if="security_warn_mqtt">{% mdicon alert-circle, #f90 %}</span><span v-else>{% mdicon check-circle, #093 %}</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="message">
+        <div class="message-header"><span class="title is-5">{% mdicon update %}Reset &amp; Upgrade</span></div>
+        <div class="message-body">
+            <div style="margin-left: auto; margin-right: auto; max-width: 700px;">
+                <div class="level status-tags">
+                    <div class="level-item">
+                        <div class="level">
+                            <div class="level-item"><span class="tag is-medium" style="color: #fff;">Product:&nbsp;<strong>{% raw %}{{ update.product }}{% endraw %}</strong></span></div>
+                            <div class="level-item"><span class="tag is-medium" style="color: #fff;">Model:&nbsp;<strong>{% raw %}{{ update.model }}{% endraw %}</strong></span></div>
+                            <div class="level-item"><span class="tag is-medium" style="color: #fff;">Branch:&nbsp;<strong>{% raw %}{{ update.branch }}{% endraw %}</strong></span></div>
+                            <div class="level-item"><span class="tag is-medium" style="color: #fff;">Version:&nbsp;<strong>{% raw %}{{ update.version }}{% endraw %}</strong></span></div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="field is-horizontal" style="padding-bottom: 10px;">
+                    <div class="field-label is-normal">Check for official updates to the Wi-Fi Stepper firmware.</div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control"><a class="button is-primary is-medium" v-bind:href="'https://www.wifistepper.com/downloads/'+update.model+'/check.html?version='+update.version+'&branch='+update.branch" target="_blank">Check Now</a></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="notification has-text-centered" v-if="update.message">
+                    <span v-html="update.message" style="color: #000;"></span>
+                </div>
+                <div class="field is-horizontal is-spaced-mobile">
+                    <div class="field-label is-normal"><label class="label">Upgrade Software</label></div>
+                    <div class="field-body">
+                        <div class="field" style="flex-grow: 0;">
+                            <span class="control">
+                                <div class="file" v-bind:class="{'has-name': update.imagename}">
+                                    <label class="file-label">
+                                        <input class="file-input" type="file" id="updateimage" ref="updateimage" v-on:change="update.imagename = $refs.updateimage.files[0].name" />
+                                        <span class="file-cta">
+                                            <span class="file-icon">{% mdicon upload, #000 %}</span>
+                                            <span class="file-label">Choose image file...</span>
+                                        </span>
+                                        <span class="file-name" v-if="update.imagename">{% raw %}{{ update.imagename }}{% endraw %}</span>
+                                    </label>
+                                </div>
+                            </span>
+                        </div>
+                        <div class="field">
+                            <span class="control">
+                                <button class="button is-primary" v-on:click="uploadimage">Upload</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal" v-bind:class="{'is-active': update.changemodal}">
+                    <div class="modal-background" v-on:click="update.changemodal = false"></div>
+                    <div class="modal-content">
+                        <div class="box has-text-centered">
+                            <div class="title is-4">{% mdicon sync-alert %}Uploading Software Image</div>
+                            <div v-if="update.working">Please do not remove power from device.</div>
+                            <span v-html="update.message"></span>
+                        </div>
+                    </div>
+                    <button class="modal-close is-large" v-on:click="update.changemodal = false"></button>
+                </div>
+                <hr />
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal">Reset all configuration to factory settings and reset device.</div>
+                    <div class="field-body">
+                        <div class="field">
+                            <span class="control"><button class="button is-primary is-medium" v-on:click="factoryreset">Factory Reset</button></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal" v-bind:class="{'is-active': update.factoryresetmodal}">
+                    <div class="modal-background" v-on:click="update.factoryresetmodal = false"></div>
+                    <div class="modal-content">
+                        <div class="box has-text-centered">
+                            <div class="title is-4">{% mdicon sync-alert %}Factory Reset</div>
+                            <div>Rebooting device. You may need to refresh the page to see changes.</div>
+                        </div>
+                    </div>
+                    <button class="modal-close is-large" v-on:click="update.factoryresetmodal = false"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script minify>
+    var product = "Wi-Fi Stepper";
+    var model = "wsx100";
+    function merge(dest, src, keys) {
+        for (i in keys) {
+            dest[keys[i]] = src[keys[i]];
+        }
+    }
+    var app = new Vue({
+        el: '#app',
+        data: {
+            wifi: {
+                changemodal: false,
+
+                detected: [],
+                ip: '',
+                rssi: 0,
+                mode: null,
+                
+                accesspoint_ssid: '',
+                accesspoint_password: '',
+                accesspoint_encryption: false,
+                accesspoint_channel: 1,
+                accesspoint_hidden: false,
+                
+                station_ssid: '',
+                station_password: '',
+                station_encryption: false,
+                station_forceip: '',
+                station_forcesubnet: '',
+                station_forcegateway: '',
+                station_revertap: true
+            },
+            service: {
+                changemodal: false,
+
+                hostname: '',
+                security: 'none',
+                mdns_enabled: false,
+                http_enabled: true,
+                auth_enabled: false,
+                auth_username: '',
+                auth_password: '',
+                lowcom_enabled: false,
+                lowcom_std_enabled: false,
+                lowcom_crypto_enabled: false,
+                mqtt_enabled: false,
+                mqtt_server: '',
+                mqtt_port: 0,
+                mqtt_auth_enabled: false,
+                mqtt_username: '',
+                mqtt_password: '',
+                mqtt_state_topic: '',
+                mqtt_state_publish_period: 0.0,
+                mqtt_command_topic: '',
+                ota_enabled: false,
+                ota_password: '',
+
+                security_matrix: {
+                    medium: {
+                        wifi: 'Password/Off',
+                        revertap: 'On/Off',
+                        mdns: 'On/Off',
+                        http: 'Auth/Off',
+                        auth: 'On when HTTP',
+                        lowcom: 'Crypto Only/Off',
+                        mqtt: 'Password/Off',
+                        ota: 'Off'
+                    },
+                    high: {
+                        wifi: 'Password & Hidden/Off',
+                        revertap: 'Off',
+                        mdns: 'Off',
+                        http: 'Off',
+                        auth: 'Off',
+                        lowcom: 'Crypto Only/Off',
+                        mqtt: 'Off',
+                        ota: 'Off'
+                    },
+                },
+
+                state: {
+                    lowcom_clients: 0,
+                    mqtt_connected: false
+                }
+            },
+            daisy: {
+                changemodal: false,
+
+                enabled: false,
+                master: false,
+                slavewifioff: false
+            },
+            crypto: {
+                provisionmodal: false,
+                changemodal: false,
+                errorpop: '',
+
+                fault: false,
+                probed: false,
+                available: false,
+                provisioned: false,
+
+                master: '',
+                key: ''
+            },
+            update: {
+                changemodal: false,
+                factoryresetmodal: false,
+
+                product: 'unknown',
+                model: 'unknown',
+                branch: 'unknown',
+                version: '0',
+                
+                working: false,
+                message: '',
+                imagename: ''
+            }
+        },
+        watch: {
+            'wifi.mode': function(newv) {
+                if (newv == 'station') {
+                    this.scanwifi();
+                }
+            },
+            'wifi.station_ssid': function(newv) {
+                for (var i = 0; i < this.wifi.detected.length; i++) {
+                    if (this.wifi.station_ssid == this.wifi.detected[i]['ssid']) {
+                        this.wifi.station_encryption = this.wifi.detected[i]['encryption'];
+                    }
+                }
+            }
+        },
+        computed: {
+            security_warn_wifi: function() {
+                return this.service.security != 'none' && (
+                    (this.wifi.mode == 'accesspoint' && !this.wifi.accesspoint_encryption) ||
+                    (this.wifi.mode == 'station' && !this.wifi.station_encryption)
+                );
+            },
+            security_warn_revertap: function() {
+                return this.service.security == 'high' && this.wifi.mode == 'station' && this.wifi.station_revertap;
+            },
+            security_warn_mdns: function() {
+                return this.service.mdns_enabled && this.service.security == 'high';
+            },
+            security_warn_http: function() {
+                return this.service.http_enabled && (
+                    (!this.service.auth_enabled && this.service.security == 'medium') ||
+                    (this.service.security == 'high')
+                );
+            },
+            security_warn_lowcom: function() {
+                return this.service.lowcom_enabled && this.service.lowcom_std_enabled && this.service.security != 'none';
+            },
+            security_warn_ota: function() {
+                return this.service.ota_enabled && this.service.security != 'none';
+            },
+            security_warn_mqtt: function() {
+                return this.service.mqtt_enabled && (
+                    (!this.service.mqtt_auth_enabled && this.service.security == 'medium') ||
+                    (this.service.security == 'high')
+                );
+            }
+        },
+        methods: {
+            scanwifi: function() {
+                console.log("Initiating Wifi Scan");
+                axios.get("{{ site.apiurl }}/api/wifi/scan").then(function (r) {
+                    if (r.data.status == 'ok') {
+                        var networks = r.data.networks;
+                        networks.sort(function(a, b){return b['rssi']-a['rssi'];});
+                        app.wifi.detected = networks;
+                    }
+                });
+            },
+            writewifi: function() {
+                console.log("Writing wifi settings");
+                if (this.wifi.mode == 'off') {
+                    axios.get("{{ site.apiurl }}/api/wifi/set/off");
+
+                } else if (this.wifi.mode == 'accesspoint') {
+                    axios.get("{{ site.apiurl }}/api/wifi/set/accesspoint", {
+                        params: {
+                            ssid: this.wifi.accesspoint_ssid,
+                            password: this.wifi.accesspoint_encryption? this.wifi.accesspoint_password : '',
+                            channel: this.wifi.accesspoint_channel,
+                            hidden: this.wifi.accesspoint_hidden
+                        }
+                    });
+
+                } else if (this.wifi.mode == 'station') {
+                    axios.get("{{ site.apiurl }}/api/wifi/set/station", {
+                        params: {
+                            ssid: this.wifi.station_ssid,
+                            password: this.wifi.station_encryption? this.wifi.station_password : '',
+                            forceip: this.wifi.station_forceip,
+                            forcesubnet: this.wifi.station_forcesubnet,
+                            forcegateway: this.wifi.station_forcegateway,
+                            revertap: this.wifi.station_revertap
+                        }
+                    });
+                }
+                this.wifi.changemodal = true;
+            },
+            lowcomupdate: function(e) {
+                switch(e.target.value) {
+                    case 'disabled': {
+                        this.service.lowcom_enabled = false;
+                        this.service.lowcom_std_enabled = false;
+                        this.service.lowcom_crypto_enabled = false;
+                        break;
+                    }
+                    case 'std': {
+                        this.service.lowcom_enabled = true;
+                        this.service.lowcom_std_enabled = true;
+                        this.service.lowcom_crypto_enabled = false;
+                        break;
+                    }
+                    case 'crypto': {
+                        this.service.lowcom_enabled = true;
+                        this.service.lowcom_std_enabled = false;
+                        this.service.lowcom_crypto_enabled = true;
+                        break;
+                    }
+                    case 'both': {
+                        this.service.lowcom_enabled = true;
+                        this.service.lowcom_std_enabled = true;
+                        this.service.lowcom_crypto_enabled = true;
+                        break;
+                    }
+                }
+            },
+            writeservice: function() {
+                axios.get("{{ site.apiurl }}/api/service/set", {
+                    params: {
+                        hostname: this.service.hostname,
+                        http_enabled: this.service.http_enabled,
+                        mdns_enabled: this.service.mdns_enabled,
+                        auth_enabled: this.service.auth_enabled,
+                        auth_username: this.service.auth_username,
+                        auth_password: this.service.auth_password,
+                        lowcom_enabled: this.service.lowcom_enabled,
+                        lowcom_std_enabled: this.service.lowcom_std_enabled,
+                        lowcom_crypto_enabled: this.service.lowcom_crypto_enabled,
+                        ota_enabled: this.service.ota_enabled,
+                        ota_password: this.service.ota_password
+                    }
+                });
+                this.service.changemodal = true;
+            },
+            writemqtt: function() {
+                axios.get("{{ site.apiurl }}/api/service/set", {
+                    params: {
+                        mqtt_enabled: this.service.mqtt_enabled,
+                        mqtt_server: this.service.mqtt_server,
+                        mqtt_port: this.service.mqtt_port,
+                        mqtt_auth_enabled: this.service.mqtt_auth_enabled,
+                        mqtt_username: this.service.mqtt_username,
+                        mqtt_password: this.service.mqtt_password,
+                        mqtt_state_topic: this.service.mqtt_state_topic,
+                        mqtt_state_publish_period: this.service.mqtt_state_publish_period,
+                        mqtt_command_topic: this.service.mqtt_command_topic
+                    }
+                });
+                this.service.changemodal = true;
+            },
+            writedaisy: function() {
+                axios.get("{{ site.apiurl }}/api/daisy/set", {
+                    params: {
+                        enabled: this.daisy.enabled,
+                        master: this.daisy.master,
+                        slavewifioff: this.daisy.slavewifioff
+                    }
+                });
+                this.daisy.changemodal = true;
+            },
+            writeprovision: function() {
+                if (this.crypto.master == '') { this.crypto.errorpop = "Enter Master Key"; return; }
+                if (this.crypto.key == '') { this.crypto.errorpop = "Enter Auth Key"; return; }
+                this.crypto.provisionmodal = true;
+            },
+            writecrypto: function() {
+                if (this.crypto.master == '') { this.crypto.errorpop = "Enter Master Key"; return; }
+                if (this.crypto.key == '') { this.crypto.errorpop = "Enter Auth Key"; return; }
+                axios.get("{{ site.apiurl }}/api/crypto/set", {
+                    params: {
+                        master: this.crypto.master,
+                        key: this.crypto.key,
+                    }
+                }).then(function(r) {
+                    if (r.data.status == 'ok') {
+                        app.crypto.errorpop = '';
+                        app.crypto.changemodal = true;
+                    } else {
+
+                        app.crypto.errorpop = r.data.message;
+                    }
+                }).catch(function(e) {
+                    app.crypto.errorpop = "Unable to issue crypto write command."
+                });
+            },
+            writesecurity: function() {
+                axios.get("{{ site.apiurl }}/api/service/security/set", {
+                    params: {
+                        security: this.service.security
+                    }
+                });
+            },
+            uploadimage: function() {
+                var image = this.$refs.updateimage.files[0];
+                if (!image) return;
+                var data = new FormData();
+                data.append("image", this.$refs.updateimage.files[0]);
+                this.update.changemodal = true;
+                this.update.message = "Working...";
+                this.update.working = true;
+                axios.post("{{ site.apiurl }}/update/image", data, {headers: {'Content-Type': 'multipart/form-data'}}).then(function(r) {
+                    if (r.data.status == 'ok') {
+                        app.update.message = 'Update completed successfully. '+r.data.updated_files+' files updated.<br />Rebooting device. You may need to refresh the page to see changes.';
+                    } else {
+                        app.update.message = '<span style="color: #c00;"><strong>Completed with Error:</strong> '+(r.data.message || "Unknown error!")+'</span><br />';
+                        if (r.data.possible_corruption != "no") {
+                            app.update.message += '<span style="color: #c00;"><strong>Possible Corruption!</strong> '+r.data.possible_corruption.replace("YES!", "")+'</span><br />';
+                        }
+                        app.update.message += 'Ensure you have the correct image and try again.<br />You may need to refresh the page to see changes.';
+                    }
+                    app.update.working = false;
+                }).catch(function(){
+                    app.update.message = '<span style="color: #c00;"><strong>Completed with Error:</strong> Failed to upload software image</span>';
+                    app.update.working = false;
+                });
+            },
+            factoryreset: function() {
+                this.update.factoryresetmodal = true;
+                axios.get("{{ site.apiurl }}/api/factoryreset");
+            },
+            readstate: function() {
+                axios.get("{{ site.apiurl }}/api/service/state").then(function(r) {
+                    if (r.data.status == 'ok') {
+                        merge(app.service.state, r.data, ['lowcom_clients', 'mqtt_connected']);
+                    }
+                });
+            }
+        },
+        mounted: function () {
+            var pollstate = function() {
+                this.readstate(false);
+                setTimeout(pollstate, 2000);
+            }.bind(this);
+
+            axios.get("{{ site.apiurl }}/api/wifi/get").then(function(r) {
+                if (r.data.status == 'ok') {
+                    merge(app.wifi, r.data, [
+                        'ip', 'rssi', 'mode',
+                        'accesspoint_ssid', 'accesspoint_password', 'accesspoint_encryption', 'accesspoint_channel', 'accesspoint_hidden',
+                        'station_ssid', 'station_password', 'station_encryption', 'station_forceip', 'station_forcesubnet', 'station_forcegateway', 'station_revertap'
+                    ]);
+                }
+            });
+            axios.get("{{ site.apiurl }}/api/service/get").then(function(r) {
+                if (r.data.status == 'ok') {
+                    merge(app.service, r.data, [
+                        'hostname', 'security',
+                        'http_enabled', 'mdns_enabled', 'auth_enabled', 'auth_username', 'auth_password',
+                        'lowcom_enabled', 'lowcom_std_enabled', 'lowcom_crypto_enabled',
+                        'mqtt_enabled', 'mqtt_server', 'mqtt_port', 'mqtt_auth_enabled', 'mqtt_username', 'mqtt_password', 'mqtt_state_topic', 'mqtt_state_publish_period', 'mqtt_command_topic',
+                        'ota_enabled', 'ota_password'
+                    ]);
+                }
+            });
+            axios.get("{{ site.apiurl }}/api/daisy/get").then(function(r) {
+                if (r.data.status == 'ok') {
+                    merge(app.daisy, r.data, ['enabled', 'master', 'slavewifioff']);
+                }
+            });
+            axios.get("{{ site.apiurl }}/api/crypto/get").then(function(r) {
+                if (r.data.status == 'ok') {
+                    merge(app.crypto, r.data, ['fault', 'probed', 'available', 'provisioned']);
+                }
+            });
+            axios.get("{{ site.apiurl }}/api/version").then(function(r) {
+                if (r.data.status == 'ok') {
+                    merge(app.update, r.data, ['product', 'model', 'branch', 'version']);
+                }
+            });
+
+            pollstate();
+        }
+    });
+</script>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{{ page.title }}</title>
+        <meta name="viewport" content="width=device-width initial-scale=1" />
+        <link rel="stylesheet" href="/css/main.css" inline clean minify />
+        {% for css in page.css %}
+            <link rel="stylesheet" href="/css/{{ css }}.css" inline clean minify />
+        {% endfor %}
+        <script type="module" src="/js/bulmajs/plugins/navbar.js" es6 inline minify></script>
+        <script src="/js/axios{% if jekyll.environment == 'production' %}.min{% endif %}.js"></script>
+        <script src="/js/vue{% if jekyll.environment == 'production' %}.min{% endif %}.js"></script>
+        <script src="/js/vue-cookies{% if jekyll.environment == 'production' %}.min{% endif %}.js"></script>
+
+        <!-- BulmaJS files -->
+        {% for js in page.bulmajs %}
+            <script type="module" src="/js/bulmajs/plugins/{{ js }}.js" es6 inline minify></script>
+        {% endfor %}
+
+        <!-- Animation -->
+        {% if page.animate == true %}
+            <link rel="stylesheet" href="/css/animate{% if jekyll.environment == 'production' %}.min{% endif %}.css" inline minify />
+        {% endif %}
+
+        <!-- Prism code highlighter -->
+        {% if page.prism == true %}
+            <link rel="stylesheet" href="/css/prism{% if jekyll.environment == 'production' %}.min{% endif %}.css" inline minify />
+            <script src="/js/prism{% if jekyll.environment == 'production' %}.min{% endif %}.js"></script>
+            <script src="/js/clipboard{% if jekyll.environment == 'production' %}.min{% endif %}.js"></script>
+        {% endif %}
+    </head>
+    <body>
+        <nav class="navbar is-black" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <span class="navbar-item">{% mdicon logo, #fff, .baseline %}Wi-Fi Stepper</span>
+                <div class="navbar-burger burger"  data-target="navbar-main">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <div class="navbar-menu" id="navbar-main">
+                <div class="navbar-start is-hidden-desktop">
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <div class="navbar-dropdown is-boxed">
+                            <a class="navbar-item" href="/quickstart">{% mdicon rocket %}Quick Start</a>
+                            <!--<a class="navbar-item" href="/dashboard">{% mdicon view-dashboard %}Dashboard</a>-->
+                            <a class="navbar-item" href="/settings">{% mdicon lock %}Settings</a>
+                            <a class="navbar-item" href="/documentation">{% mdicon book-open-variant %}Documentation</a>
+                            <a class="navbar-item" href="/troubleshoot">{% mdicon led-off %}Troubleshoot</a>
+                            <a class="navbar-item" href="/about">{% mdicon information %}About</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <section class="section columns">
+            <aside class="column is-2 is-hidden-touch">
+                <p class="menu-label">Menu</p>
+                <ul class="menu-list">
+                    <li><a class="{% if page.menu == 'quickstart' %}is-active{% endif %}" href="/quickstart">{% mdicon rocket %}Quick Start</a></li>
+                    <!--<li><a class="{% if page.menu == 'dashboard' %}is-active{% endif %}" href="/dashboard">{% mdicon view-dashboard %}Dashboard</a></li>-->
+                    <li><a class="{% if page.menu == 'settings' %}is-active{% endif %}" href="/settings">{% mdicon lock %}Settings</a></li>
+                    <li><a class="{% if page.menu == 'documentation' %}is-active{% endif %}" href="/documentation">{% mdicon book-open-variant %}Documentation</a></li>
+                    <li><a class="{% if page.menu == 'troubleshoot' %}is-active{% endif %}" href="/troubleshoot">{% mdicon led-off %}Troubleshoot</a></li>
+                    <li><a class="{% if page.menu == 'about' %}is-active{% endif %}" href="/about">{% mdicon information %}About</a></li>
+                </ul>
+            </aside>
+
+            <div class="container column">
+                {{ content }}
+            </div>
+        </section>
+
+        <footer class="footer is-hidden">
+            <div class="container">
+                <div class="content has-text-centered">
+                    <p>Hello</p>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>
