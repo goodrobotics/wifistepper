@@ -3,6 +3,7 @@ source: src
 destination: build
 theme: just-the-docs
 search_enabled: true
+ga_tracking: UA-128441685-3
 aux_links:
   "Wi-Fi Stepper on GitHub":
     - "//github.com/goodrobotics/wifistepper"

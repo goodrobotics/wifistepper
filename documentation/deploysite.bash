@@ -8,6 +8,7 @@ echo "Cleaning environment"
 rm -rf $CACHEFILE build/
 
 echo "Running jekyll build"
+bundle exec just-the-docs rake search:init
 JEKYLL_ENV=production bundle exec jekyll build --config _config.yml --trace
 if [ $? -ne 0 ]; then
     echo "ERROR: Bad jekyll compilation"
