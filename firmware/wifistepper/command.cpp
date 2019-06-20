@@ -242,6 +242,20 @@ void cmd_loop(unsigned long now) {
         consume = 0;
         break;
       }
+      case CMD_SETSIGNAL: {
+        cmd_signal_t * cmd = (cmd_signal_t *)Qcmd;
+        state.signal.value = cmd->value;
+        state.signal.modified = millis();
+        consume += sizeof(cmd_signal_t);
+        break;
+      }
+      case CMD_INCSIGNAL: {
+        cmd_signal_t * cmd = (cmd_signal_t *)Qcmd;
+        state.signal.value += cmd->value;
+        state.signal.modified = millis();
+        consume += sizeof(cmd_signal_t);
+        break;
+      }
     }
 
     if (consume > 0) {
@@ -394,6 +408,18 @@ bool cmd_waitswitch(queue_t * queue, id_t id, bool state) {
 bool cmd_runqueue(queue_t * queue, id_t id, uint8_t targetqueue) {
   cmd_runqueue_t * cmd = (cmd_runqueue_t *)cmd_alloc(queue, id, CMD_RUNQUEUE, sizeof(cmd_runqueue_t));
   if (cmd != NULL) *cmd = { .targetqueue = targetqueue };
+  return cmd != NULL;
+}
+
+bool cmd_setsignal(queue_t * queue, id_t id, int value) {
+  cmd_signal_t * cmd = (cmd_signal_t *)cmd_alloc(queue, id, CMD_SETSIGNAL, sizeof(cmd_signal_t));
+  if (cmd != NULL) *cmd = { .value = value };
+  return cmd != NULL;
+}
+
+bool cmd_incsignal(queue_t * queue, id_t id, int value) {
+  cmd_signal_t * cmd = (cmd_signal_t *)cmd_alloc(queue, id, CMD_INCSIGNAL, sizeof(cmd_signal_t));
+  if (cmd != NULL) *cmd = { .value = value };
   return cmd != NULL;
 }
 

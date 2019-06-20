@@ -48,6 +48,10 @@ static void cmdq_parse(JsonObject& entry, id_t id, uint8_t target, uint8_t queue
     m_waitms(target, queue, id, entry["ms"].as<uint32_t>());
   } else if (type == "waitswitch") {
     m_waitswitch(target, queue, id, entry["state"].as<bool>());
+  } else if (type == "setsignal") {
+    m_setsignal(target, queue, id, entry["value"].as<int>());
+  } else if (type == "incsignal") {
+    m_incsignal(target, queue, id, entry["value"].as<int>());
   } else if (type == "emptyqueue") {
     m_emptyqueue(target, queue, id);
   } else if (type == "savequeue") {
@@ -187,6 +191,20 @@ size_t cmdq_serialize(JsonObject& entry, cmd_head_t * head) {
       entry["type"] = "waitswitch";
       entry["state"] = cmd->state;
       consume += sizeof(cmd_waitsw_t);
+      break;
+    }
+    case CMD_SETSIGNAL: {
+      cmd_signal_t * cmd = (cmd_signal_t *)data;
+      entry["type"] = "setsignal";
+      entry["value"] = cmd->value;
+      consume += sizeof(cmd_signal_t);
+      break;
+    }
+    case CMD_INCSIGNAL: {
+      cmd_signal_t * cmd = (cmd_signal_t *)data;
+      entry["type"] = "incsignal";
+      entry["value"] = cmd->value;
+      consume += sizeof(cmd_signal_t);
       break;
     }
   }

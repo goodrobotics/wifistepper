@@ -20,7 +20,7 @@ aws s3 sync build/ $S3BUCKET --size-only --include "*.*" --delete --profile wifi
 echo "Done uploading"
 
 # Invalidate only modified files
-changed=$(grep "upload\|deleted" $CACHEFILE | sed -e "s|.*upload.*to ${S3BUCKET}|/|" | sed -e "s|.*delete: ${S3BUCKET}|/|" | sed -e 's/index.html//' | sed -e 's/\(.*\).html/\1/')
+changed=$(grep "upload\|deleted" $CACHEFILE | sed -e "s|.*upload.*to ${S3BUCKET}|/|" | sed -e "s|.*delete: ${S3BUCKET}|/|")
 num=$(cat $CACHEFILE | wc -l)
 echo "Number of files changed: $num"
 if [ $num -eq 0 ]; then

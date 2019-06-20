@@ -92,6 +92,8 @@ typedef struct ispacked {
 #define OPCODE_RESETPOS     (0x1A)
 #define OPCODE_SETPOS       (0x1B)
 #define OPCODE_SETMARK      (0x1C)
+#define OPCODE_SETSIGNAL    (0x1D)
+#define OPCODE_INCSIGNAL    (0x1E)
 
 #define OPCODE_WAITBUSY     (0x21)
 #define OPCODE_WAITRUNNING  (0x22)
@@ -405,6 +407,8 @@ static void lc_handlepacket(size_t client, uint8_t mode, uint8_t opcode, uint8_t
         return;
       }
       motor_state * st = target == 0? &state.motor : &sketch.daisy.slave[target - 1].state.motor;
+      signal_state * sig = target == 0? &state.signal : &sketch.daisy.slave[target - 1].state.signal;
+      command_state * cmd = target == 0? &state.command : &sketch.daisy.slave[target - 1].state.command;
       JsonObject& root = jsonbuf.createObject();
       root["stepss"] = st->stepss;
       root["pos"] = st->pos;
@@ -424,6 +428,14 @@ static void lc_handlepacket(size_t client, uint8_t mode, uint8_t opcode, uint8_t
       alarms["thermalwarning"] = st->status.alarms.thermal_warning;
       alarms["stalldetect"] = st->status.alarms.stall_detect;
       alarms["switch"] = st->status.alarms.user_switch;
+      JsonObject& signal = root.createNestedObject("signal");
+      signal["value"] = sig->value;
+      signal["modified"] = sig->modified;
+      JsonObject& command = root.createNestedObject("command");
+      command["thisid"] = cmd->this_command;
+      command["lastid"] = cmd->last_command;
+      command["completed"] = cmd->last_completed;
+      root["now"] = millis();   // TODO - offset timestamp if slave!
       JsonVariant v = root;
       String reply = v.as<String>();
       lc_reply(client, mode, opcode, SUBCODE_REPLY, target, queue, packetid, (uint8_t *)reply.c_str(), reply.length()+1);
@@ -521,6 +533,22 @@ static void lc_handlepacket(size_t client, uint8_t mode, uint8_t opcode, uint8_t
       cmd_setpos_t * cmd = (cmd_setpos_t *)data;
       lc_debug("CMD setpos", cmd->pos);
       m_setmark(target, queue, id, cmd->pos);
+      lc_replyack(client, mode, opcode, target, queue, packetid, id);
+      break;
+    }
+    case OPCODE_SETSIGNAL: {
+      lc_expectlen(sizeof(cmd_signal_t));
+      cmd_signal_t * cmd = (cmd_signal_t *)data;
+      lc_debug("CMD setsignal", cmd->value);
+      m_setsignal(target, queue, id, cmd->value);
+      lc_replyack(client, mode, opcode, target, queue, packetid, id);
+      break;
+    }
+    case OPCODE_INCSIGNAL: {
+      lc_expectlen(sizeof(cmd_signal_t));
+      cmd_signal_t * cmd = (cmd_signal_t *)data;
+      lc_debug("CMD incsignal", cmd->value);
+      m_incsignal(target, queue, id, cmd->value);
       lc_replyack(client, mode, opcode, target, queue, packetid, id);
       break;
     }

@@ -1,4 +1,115 @@
 ---
-layout: simple
+title: Wi-Fi Stepper wsx100 firmware downloads
+js:
+    - vue
+    - url
+    - moment-with-locales
+nav_exclude: true
+layout: dynamic
 ---
-<h1>Check version</h1>
+{% raw %}
+<section id="app" class="section" v-cloak>
+    <div class="container">
+        <h1 class="title is-2">Latest firmware for {{ model }} boards</h1>
+        <div class="box has-text-centered" style="margin-top: 30px; margin-bottom: 30px;" v-if="version">
+            <div v-if="!update">
+                <h2 class="title is-4" style="color: #093;">You have the latest version</h2>
+            </div>
+            <div v-else>
+                <h2 class="title is-4" style="color: #f90;">An update is available</h2>
+                <h3 class="subtitle is-5">Latest version is <strong>{{ update.version }}</strong> on branch <strong>{{ update.branch }}</strong></h3>
+            </div>
+        </div>
+        <table class="table is-fullwidth">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th class="has-text-centered">Version</th>
+                    <th class="has-text-centered">Branch</th>
+                    <th>Download</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="entry in software" v-bind:style="entry.version == version && entry.branch == branch? {'background-color': '#e6f2ff'} : {}">
+                    <td>{{ entry.released | date }}</td>
+                    <td class="has-text-centered"><strong>{{ entry.version }}</strong></td>
+                    <td class="has-text-centered">{{ entry.branch }}</td>
+                    <td><a class="link" style="font-weight: bold;" v-bind:href="entry.filename" v-on:click="download = entry">{{ entry.filename }}</a></td>
+                    <td><a class="link" v-on:click="changelog = entry">Changelog</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="modal is-active" v-if="download">
+        <div class="modal-background" v-on:click="download = null"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Downloading version <strong>{{ download.version }}</strong></p>
+            </header>
+            <section class="modal-card-body">
+                <p><span style="padding-right: 10px;">MD5:</span><span class="tag">{{ download.md5sum }}</span></p>
+                <p><span style="padding-right: 10px;">SHA1:</span><span class="tag">{{ download.sha1sum }}</span></p>
+                <div class="content">
+                    Changelog:
+                    <ul style="margin-top: 0px;">
+                        <li v-for="item in download.changelog">{{ item }}</li>
+                    </ul>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" v-on:click="download = null">Close</button>
+            </footer>
+        </div>
+    </div>
+    <div class="modal is-active" v-else-if="changelog">
+        <div class="modal-background" v-on:click="changelog = null"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">Changelog for version <strong>{{ changelog.version }}</strong></p>
+            </header>
+            <section class="modal-card-body">
+                <div class="content">
+                    <ul style="margin-top: 0px;">
+                        <li v-for="item in changelog.changelog">{{ item }}</li>
+                    </ul>
+                </div>
+            </section>
+            <footer class="modal-card-foot">
+                <button class="button is-success" v-on:click="changelog = null">Close</button>
+            </footer>
+        </div>
+    </div>
+</section>
+{% endraw %}
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            model: 'wsx100',
+            version: null,
+            branch: null,
+            software: {{ site.data.software.wsx100 | reverse | jsonify }},
+            download: null,
+            changelog: null
+        },
+        computed: {
+            update: function() {
+                var available = this.software.filter(function(e) { return (app.branch == null || e.branch == app.branch) && e.version > app.version; });
+                return available.length > 0? available[0] : null;
+            }
+        },
+        methods: {
+        },
+        filters: {
+            date: function(timestamp) {
+                return moment(timestamp * 1000).format('ll');
+            }
+        },
+        mounted: function() {
+            var url = new Url();
+            if (url.query.version !== undefined) this.version = parseInt(url.query.version);
+            if (url.query.branch !== undefined) this.branch = url.query.branch;
+        }
+    });
+</script>

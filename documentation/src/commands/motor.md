@@ -116,7 +116,7 @@ Note: This command is useful during homing and can be coupled with *[WaitBusy](#
 
 | Parameter | Type | Description | Default |
 |:--|:--|:--|:--:|
-| action | Enum(reset, copymark) |  | (required) |
+| action | Enum(reset, copymark) | The action to perform when switch is closed. | (required) |
 | dir | Enum(forward, reverse) | The direction to spin | (required) |
 | stepss | Float | The number of full steps per second to rotate (doesn't depend on microstep config). This is a decimal parameter so specifying fractional steps per second is allowed. | (required) |
 | *target* | Int | When [Daisy Chain](/daisy-chain.html) enabled, issue this command to the target motor. | 0 |
@@ -126,6 +126,21 @@ Note: This command is useful during homing and can be coupled with *[WaitBusy](#
 - **Effect on BUSY flag:** Asserts BUSY flag until the switch is closed.
 - **Bytes allocated in Queue:** 11 Bytes.
 - **Side Effects:** None.
+
+---
+## IncSignal
+Increments signal register by the specified value. If `value` is negative, it is effectively subtracted. See [SetSignal](#setsignal) and the [command queue](/command-queue.html) documentation for more information.
+
+| Parameter | Type | Description | Default |
+|:--|:--|:--|:--:|
+| value | Int | The value to increment the signal register. Can be negative. | 1 |
+| *target* | Int | When [Daisy Chain](/daisy-chain.html) enabled, issue this command to the target motor. | 0 |
+| *queue* | Int | The [Queue](/command-queue.html) to add this command to. | 0 |
+
+- **Preconditions:** None.
+- **Effect on BUSY flag:** None.
+- **Bytes allocated in Queue:** 9 Bytes.
+- **Side Effects:** The signal register is incremented by the `value` param.
 
 ---
 ## Move
@@ -155,9 +170,8 @@ Note: This command is intended for use during a homing operation. See [GoUntil](
 
 | Parameter | Type | Description | Default |
 |:--|:--|:--|:--:|
-| action | Enum(reset, copymark) |  | (required) |
+| action | Enum(reset, copymark) | The action to perform when switch is closed. | (required) |
 | dir | Enum(forward, reverse) | The direction to spin | (required) |
-| stepss | Float | The number of full steps per second to rotate (doesn't depend on microstep config). This is a decimal parameter so specifying fractional steps per second is allowed. | (required) |
 | *target* | Int | When [Daisy Chain](/daisy-chain.html) enabled, issue this command to the target motor. | 0 |
 | *queue* | Int | The [Queue](/command-queue.html) to add this command to. | 0 |
 
@@ -202,7 +216,7 @@ The Quick Start guide utilizes this command in the Speed Control profile.
 ## RunQueue
 When at the head of the Execution Queue, this command will copy the `targetqueue` into it's current position at the head, shifting all other queued commands down. If there is not enough space in the Execution Queue for `targetqueue` + rest of queue, an error status is set and this command is skipped. *RunQueue* has no effect on the motor.
 
-You can use this command to enable looping and/or group complex motions into queues for easy execution. 
+You can use this command to enable looping and/or group complex motions into queues for easy execution. This command can also be used to create infinite loops when added to the end of a queue with the `targetqueue` referencing the same queue. For loop monitoring, use [SetSignal](#setsignal) and [IncSignal](#incsignal) as well.
 
 **Note:** This is *not* a queue management command, it can be added to any queue at any time and is only evaluated when it is at the head of the *Execution Queue*.
 
@@ -271,6 +285,21 @@ Set the current shaft position to `pos` in the [Pos](#pos) register.
 - **Effect on BUSY flag:** None.
 - **Bytes allocated in Queue:** 9 Bytes.
 - **Side Effects:** The [Pos](#pos) register is set to the `pos` param.
+
+---
+## SetSignal
+Set the signal register to the specified value. This command is added to the specified queue and will only modify the signal register when executed. You can use this command along with [IncSignal](#incsignal) and [RunQueue](#runqueue) to set up and manage looping commands.
+
+| Parameter | Type | Description | Default |
+|:--|:--|:--|:--:|
+| value | Int | The value to write to the signal register. Can be negative. | (required) |
+| *target* | Int | When [Daisy Chain](/daisy-chain.html) enabled, issue this command to the target motor. | 0 |
+| *queue* | Int | The [Queue](/command-queue.html) to add this command to. | 0 |
+
+- **Preconditions:** None.
+- **Effect on BUSY flag:** None.
+- **Bytes allocated in Queue:** 9 Bytes.
+- **Side Effects:** The signal register is set to the `value` param.
 
 ---
 ## StepClock

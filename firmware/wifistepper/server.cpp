@@ -364,6 +364,8 @@ void api_initmotor() {
     check_auth()
     get_target()
     motor_state * st = target == 0? &state.motor : &sketch.daisy.slave[target - 1].state.motor;
+    signal_state * sig = target == 0? &state.signal : &sketch.daisy.slave[target - 1].state.signal;
+    command_state * cmd = target == 0? &state.command : &sketch.daisy.slave[target - 1].state.command;
     JsonObject& root = jsonbuf.createObject();
     if (server.hasArg("target")) root["target"] = target;
     root["stepss"] = st->stepss;
@@ -384,12 +386,20 @@ void api_initmotor() {
     alarms["thermalwarning"] = st->status.alarms.thermal_warning;
     alarms["stalldetect"] = st->status.alarms.stall_detect;
     alarms["switch"] = st->status.alarms.user_switch;
+    JsonObject& signal = root.createNestedObject("signal");
+    signal["value"] = sig->value;
+    signal["modified"] = sig->modified;
+    JsonObject& command = root.createNestedObject("command");
+    command["thisid"] = cmd->this_command;
+    command["lastid"] = cmd->last_command;
+    command["completed"] = cmd->last_completed;
+    root["now"] = millis();   // TODO - offset timestamp if slave!
     root["status"] = "ok";
     JsonVariant v = root;
     server.send(200, "application/json", v.as<String>());
     jsonbuf.clear();
   });
-  server.on("/api/motor/pos/reset", HTTP_GET, [](){
+  server.on("/api/motor/resetpos", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
@@ -398,13 +408,13 @@ void api_initmotor() {
     m_resetpos(target, queue, id);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/pos/set", HTTP_GET, [](){
+  server.on("/api/motor/setpos", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
     get_queue()
     if (!server.hasArg("pos")) {
-      server.send(200, "application/json", json_error("position arg must be specified"));
+      server.send(200, "application/json", json_error("pos arg must be specified"));
       return;
     }
     int pos = server.arg("pos").toInt();
@@ -412,13 +422,13 @@ void api_initmotor() {
     m_setpos(target, queue, id, pos);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/mark/set", HTTP_GET, [](){
+  server.on("/api/motor/setmark", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
     get_queue()
     if (!server.hasArg("pos")) {
-      server.send(200, "application/json", json_error("position arg must be specified"));
+      server.send(200, "application/json", json_error("pos arg must be specified"));
       return;
     }
     int mark = server.arg("pos").toInt();
@@ -432,13 +442,31 @@ void api_initmotor() {
     get_target()
     get_queue()
     if (!server.hasArg("stepss") || !server.hasArg("dir")) {
-      server.send(200, "application/json", json_error("stepss, direction args must be specified."));
+      server.send(200, "application/json", json_error("stepss, dir args must be specified."));
       return;
     }
     ps_direction dir = parse_direction(server.arg("dir"), FWD);
     float stepss = server.arg("stepss").toFloat();
     id_t id = nextid();
     m_run(target, queue, id, dir, stepss);
+    server.send(200, "application/json", json_okid(id));
+  });
+  server.on("/api/motor/gohome", HTTP_GET, [](){
+    add_headers()
+    check_auth()
+    get_target()
+    get_queue()
+    id_t id = nextid();
+    m_gohome(target, queue, id);
+    server.send(200, "application/json", json_okid(id));
+  });
+  server.on("/api/motor/gomark", HTTP_GET, [](){
+    add_headers()
+    check_auth()
+    get_target()
+    get_queue()
+    id_t id = nextid();
+    m_gomark(target, queue, id);
     server.send(200, "application/json", json_okid(id));
   });
   server.on("/api/motor/goto", HTTP_GET, [](){
@@ -456,13 +484,63 @@ void api_initmotor() {
     m_goto(target, queue, id, pos, server.hasArg("dir"), dir);
     server.send(200, "application/json", json_okid(id));
   });
+  server.on("/api/motor/gountil", HTTP_GET, [](){
+    add_headers()
+    check_auth()
+    get_target()
+    get_queue()
+    if (!server.hasArg("action") || !server.hasArg("dir") || !server.hasArg("stepss")) {
+      server.send(200, "application/json", json_error("action, dir, stepss arg must be specified"));
+      return;
+    }
+    ps_posact action = parse_action(server.arg("action"), POS_RESET);
+    ps_direction dir = parse_direction(server.arg("dir"), FWD);
+    float stepss = server.arg("stepss").toFloat();
+    id_t id = nextid();
+    m_gountil(target, queue, id, action, dir, stepss);
+    server.send(200, "application/json", json_okid(id));
+  });
+  server.on("/api/motor/move", HTTP_GET, [](){
+    add_headers()
+    check_auth()
+    get_target()
+    get_queue()
+    if (!server.hasArg("dir") || !server.hasArg("microsteps")) {
+      server.send(200, "application/json", json_error("dir, microsteps arg must be specified"));
+      return;
+    }
+    ps_direction dir = parse_direction(server.arg("dir"), FWD);
+    int microsteps = server.arg("microsteps").toInt();
+    if (microsteps <= 0) {
+      server.send(200, "application/json", json_error("microsteps arg must be positive"));
+      return;
+    }
+    id_t id = nextid();
+    m_move(target, queue, id, dir, microsteps);
+    server.send(200, "application/json", json_okid(id));
+  });
+  server.on("/api/motor/releasesw", HTTP_GET, [](){
+    add_headers()
+    check_auth()
+    get_target()
+    get_queue()
+    if (!server.hasArg("action") || !server.hasArg("dir")) {
+      server.send(200, "application/json", json_error("action, dir arg must be specified"));
+      return;
+    }
+    ps_posact action = parse_action(server.arg("action"), POS_RESET);
+    ps_direction dir = parse_direction(server.arg("dir"), FWD);
+    id_t id = nextid();
+    m_releasesw(target, queue, id, action, dir);
+    server.send(200, "application/json", json_okid(id));
+  });
   server.on("/api/motor/stepclock", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
     get_queue()
     if (!server.hasArg("dir")) {
-      server.send(200, "application/json", json_error("direction arg must be specified"));
+      server.send(200, "application/json", json_error("dir arg must be specified"));
       return;
     }
     ps_direction dir = parse_direction(server.arg("dir"), FWD);
@@ -481,7 +559,7 @@ void api_initmotor() {
     m_stop(target, queue, id, hiz, soft);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/wait/busy", HTTP_GET, [](){
+  server.on("/api/motor/waitbusy", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
@@ -490,7 +568,7 @@ void api_initmotor() {
     m_waitbusy(target, queue, id);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/wait/running", HTTP_GET, [](){
+  server.on("/api/motor/waitrunning", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
@@ -499,7 +577,7 @@ void api_initmotor() {
     m_waitrunning(target, queue, id);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/wait/ms", HTTP_GET, [](){
+  server.on("/api/motor/waitms", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
@@ -517,7 +595,7 @@ void api_initmotor() {
     m_waitms(target, queue, id, ms);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/wait/switch", HTTP_GET, [](){
+  server.on("/api/motor/waitswitch", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
@@ -527,7 +605,34 @@ void api_initmotor() {
     m_waitswitch(target, queue, id, state);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/queue/get", HTTP_GET, [](){
+  server.on("/api/motor/setsignal", HTTP_GET, [](){
+    add_headers()
+    check_auth()
+    get_target()
+    get_queue()
+    if (!server.hasArg("value")) {
+      server.send(200, "application/json", json_error("value arg must be specified"));
+      return;
+    }
+    int value = server.arg("value").toInt();
+    id_t id = nextid();
+    m_setsignal(target, queue, id, value);
+    server.send(200, "application/json", json_okid(id));
+  });
+  server.on("/api/motor/incsignal", HTTP_GET, [](){
+    add_headers()
+    check_auth()
+    get_target()
+    get_queue()
+    int value = 1;
+    if (server.hasArg("value")) {
+      value = server.arg("value").toInt();
+    }
+    id_t id = nextid();
+    m_incsignal(target, queue, id, value);
+    server.send(200, "application/json", json_okid(id));
+  });
+  server.on("/api/queue/get", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_queue()
@@ -543,7 +648,7 @@ void api_initmotor() {
     server.send(200, "application/json", v.as<String>());
     jsonbuf.clear();
   });
-  server.on("/api/motor/queue/add", HTTP_POST, [](){
+  server.on("/api/queue/add", HTTP_POST, [](){
     add_headers()
     check_auth()
     JsonArray& arr = jsonbuf.parseArray(server.arg("plain"));
@@ -551,7 +656,7 @@ void api_initmotor() {
     jsonbuf.clear();
     server.send(200, "application/json", json_okid(nextid()));
   });
-  server.on("/api/motor/queue/run", HTTP_GET, [](){
+  server.on("/api/motor/runqueue", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
@@ -565,7 +670,7 @@ void api_initmotor() {
     m_runqueue(target, queue, id, targetqueue);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/queue/empty", HTTP_GET, [](){
+  server.on("/api/queue/empty", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
@@ -574,7 +679,7 @@ void api_initmotor() {
     m_emptyqueue(target, queue, id);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/queue/save", HTTP_GET, [](){
+  server.on("/api/queue/save", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
@@ -587,7 +692,7 @@ void api_initmotor() {
     m_savequeue(target, queue, id);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/queue/load", HTTP_GET, [](){
+  server.on("/api/queue/load", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()
@@ -600,7 +705,7 @@ void api_initmotor() {
     m_loadqueue(target, queue, id);
     server.send(200, "application/json", json_okid(id));
   });
-  server.on("/api/motor/queue/copy", HTTP_GET, [](){
+  server.on("/api/queue/copy", HTTP_GET, [](){
     add_headers()
     check_auth()
     get_target()

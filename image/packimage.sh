@@ -4,7 +4,7 @@ set -e
 IMAGE="../firmware/wifistepper/wifistepper.ino.generic.bin"
 DATA="../firmware/wifistepper/data/"
 
-VERSION=1
+VERSION=2
 OUTPUT="wifistepper.image.$VERSION.bin"
 
 echo "Checking environment"

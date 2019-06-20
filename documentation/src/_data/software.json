@@ -1,0 +1,29 @@
+{
+	"wsx100": [
+		{
+			"version": 1,
+			"branch": "stable",
+			"released": 1558742400,
+			"filename": "wifistepper.image.1.bin",
+			"md5sum": "22df711dc40065f66b560ac8c63e51ae",
+			"sha1sum": "bd34d815cb4c31dc102779f953659eb814788168",
+			"changelog": [
+				"Initial firmware image release."
+			]
+		},
+		{
+			"version": 2,
+			"branch": "stable",
+			"released": 1560988800,
+			"filename": "wifistepper.image.2.bin",
+			"md5sum": "61e2888c6ee353952e2665dcc7874437",
+			"sha1sum": "2b76f44c368a5515ca71fdc2de29c8de3522f2f8",
+			"changelog": [
+				"Updated command names for consistency.",
+				"Added setsignal and incsignal commands.",
+				"All commands are now exposed in the restful interface.",
+				"Other minor bug fixes."
+			]
+		}
+	]
+}

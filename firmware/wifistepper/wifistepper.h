@@ -8,7 +8,7 @@
 #define PRODUCT           "Wi-Fi Stepper"
 #define MODEL             "wsx100"
 #define BRANCH            "stable"
-#define VERSION           (1)
+#define VERSION           (2)
 
 #define RESET_PIN         (5)
 #define RESET_TIMEOUT     (3000)
@@ -229,7 +229,7 @@ typedef struct ispacked {
 typedef struct ispacked {
   id_t this_command;
   id_t last_command;
-  unsigned int last_completed;
+  unsigned long last_completed;
 } command_state;
 
 typedef struct ispacked {
@@ -268,6 +268,11 @@ typedef struct ispacked {
   float vin;
 } motor_state;
 
+typedef struct ispacked {
+  int value;
+  unsigned long modified;
+} signal_state;
+
 typedef struct {
   error_state error;
   command_state command;
@@ -275,6 +280,7 @@ typedef struct {
   service_state service;
   daisy_state daisy;
   motor_state motor;
+  signal_state signal;
 } state_t;
 
 typedef struct {
@@ -316,6 +322,7 @@ typedef struct ispacked {
   command_state command;
   wifi_state wifi;
   motor_state motor;
+  signal_state signal;
 } daisy_slavestate;
 
 typedef struct {
@@ -417,6 +424,10 @@ typedef struct ispacked {
   uint8_t targetqueue;
 } cmd_runqueue_t;
 
+typedef struct ispacked {
+  int value;
+} cmd_signal_t;
+
 
 void cmd_init();
 void cmd_loop(unsigned long now);
@@ -444,6 +455,8 @@ bool cmd_waitbusy(queue_t * q, id_t id);
 bool cmd_waitrunning(queue_t * q, id_t id);
 bool cmd_waitms(queue_t * q, id_t id, uint32_t ms);
 bool cmd_waitswitch(queue_t * q, id_t id, bool state);
+bool cmd_setsignal(queue_t * q, id_t id, int value);
+bool cmd_incsignal(queue_t * q, id_t id, int value);
 
 void cmdq_read(JsonArray& arr, uint8_t target, uint8_t queue);
 void cmdq_read(JsonArray& arr, uint8_t target);
@@ -480,6 +493,8 @@ bool daisy_waitrunning(uint8_t target, uint8_t q, id_t id);
 bool daisy_waitms(uint8_t target, uint8_t q, id_t id, uint32_t millis);
 bool daisy_waitswitch(uint8_t target, uint8_t q, id_t id, bool state);
 bool daisy_runqueue(uint8_t target, uint8_t q, id_t id, uint8_t targetqueue);
+bool daisy_setsignal(uint8_t target, uint8_t q, id_t id, int value);
+bool daisy_incsignal(uint8_t target, uint8_t q, id_t id, int value);
 
 bool daisy_emptyqueue(uint8_t target, uint8_t q, id_t id);
 bool daisy_copyqueue(uint8_t target, uint8_t q, id_t id, uint8_t sourcequeue);
@@ -549,7 +564,8 @@ static inline bool m_emptyqueue(uint8_t target, uint8_t q, id_t id) { if (target
 static inline bool m_savequeue(uint8_t target, uint8_t q, id_t id) { if (target == 0) { return queuecfg_write(q); } else { return daisy_savequeue(target, q, id); } }
 static inline bool m_loadqueue(uint8_t target, uint8_t q, id_t id) { if (target == 0) { return queuecfg_read(q); } else { return daisy_loadqueue(target, q, id); } }
 static inline bool m_copyqueue(uint8_t target, uint8_t q, id_t id, uint8_t sourcequeue) { if (target == 0) { return cmdq_copy(queue_get(q), id, queue_get(sourcequeue)); } else { return daisy_copyqueue(target, q, id, sourcequeue); } }
-
+static inline bool m_setsignal(uint8_t target, uint8_t q, id_t id, int value) { if (target == 0) { return cmd_setsignal(queue_get(q), id, value); } else { return daisy_setsignal(target, q, id, value); } }
+static inline bool m_incsignal(uint8_t target, uint8_t q, id_t id, int value) { if (target == 0) { return cmd_incsignal(queue_get(q), id, value); } else { return daisy_incsignal(target, q, id, value); } }
 
 // Utility functions
 extern config_t config;

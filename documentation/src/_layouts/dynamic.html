@@ -1,0 +1,27 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{{ page.title }}</title>
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <meta name="viewport" content="width=device-width initial-scale=1" />
+        <link rel="stylesheet" href="/css/main.css" />
+
+        <!-- Additional js files -->
+        {% if page.js %}
+            {% if jekyll.environment == "production" %}
+                {% assign js_suffix = ".min" %}
+            {% else %}
+                {% assign js_minify = "minify" %}
+            {% endif %}
+            {% for js in page.js %}
+                <script src="/js/{{ js }}{{ js_suffix }}.js"></script>
+            {% endfor %}
+        {% endif %}
+    </head>
+    <body>
+        {{ content }}
+    </body>
+</html>

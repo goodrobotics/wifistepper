@@ -65,6 +65,8 @@ class _ComCommon:
     _OPCODE_RESETPOS = (0x1A)
     _OPCODE_SETPOS = (0x1B)
     _OPCODE_SETMARK = (0x1C)
+    _OPCODE_SETSIGNAL = (0x1D)
+    _OPCODE_INCSIGNAL = (0x1E)
 
     _OPCODE_WAITBUSY = (0x21)
     _OPCODE_WAITRUNNING = (0x22)
@@ -314,6 +316,14 @@ class _ComCommon:
         self._checkconnected()
         return self._waitreply(self._send(self._OPCODE_SETMARK, self._SUBCODE_CMD, target, queue, struct.pack('<i', pos)), self._SUBCODE_ACK)
 
+    def cmd_setsignal(self, target, queue, value):
+        self._checkconnected()
+        return self._waitreply(self._send(self._OPCODE_SETSIGNAL, self._SUBCODE_CMD, target, queue, struct.pack('<i', value)), self._SUBCODE_ACK)
+
+    def cmd_incsignal(self, target, queue, value):
+        self._checkconnected()
+        return self._waitreply(self._send(self._OPCODE_INCSIGNAL, self._SUBCODE_CMD, target, queue, struct.pack('<i', value)), self._SUBCODE_ACK)
+
     def cmd_waitbusy(self, target, queue):
         self._checkconnected()
         return self._waitreply(self._send(self._OPCODE_WAITBUSY, self._SUBCODE_CMD, target, queue), self._SUBCODE_ACK)
@@ -519,6 +529,12 @@ class WifiStepper:
 
     def setmark(self, pos, target = None, queue = 0):
         return self.__comm.cmd_setmark(self._target(target), queue, pos)
+
+    def setsignal(self, value, target = None, queue = 0):
+        return self.__comm.cmd_setsignal(self._target(target), queue, value)
+
+    def incsignal(self, value, target = None, queue = 0):
+        return self.__comm.cmd_incsignal(self._target(target), queue, value)
 
     def waitbusy(self, target = None, queue = 0):
         return self.__comm.cmd_waitbusy(self._target(target), queue)

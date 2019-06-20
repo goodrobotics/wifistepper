@@ -1,0 +1,11 @@
+---
+---
+
+$body-background-color: whitesmoke;
+$table-background-color: $body-background-color;
+
+@import 'bulma';
+
+[v-cloak] {
+    display: none;
+}

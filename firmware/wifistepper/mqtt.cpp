@@ -91,6 +91,8 @@ void mqtt_loop(unsigned long now) {
     mqtt_debug("Send state", config.service.mqtt.state_topic);
     
     motor_state * st = &state.motor;
+    signal_state * sig = &state.signal;
+    command_state * cmd = &state.command;
     JsonObject& root = jsonbuf.createObject();
     root["stepss"] = st->stepss;
     root["pos"] = st->pos;
@@ -110,6 +112,14 @@ void mqtt_loop(unsigned long now) {
     alarms["thermalwarning"] = st->status.alarms.thermal_warning;
     alarms["stalldetect"] = st->status.alarms.stall_detect;
     alarms["switch"] = st->status.alarms.user_switch;
+    JsonObject& signal = root.createNestedObject("signal");
+    signal["value"] = sig->value;
+    signal["modified"] = sig->modified;
+    JsonObject& command = root.createNestedObject("command");
+    command["thisid"] = cmd->this_command;
+    command["lastid"] = cmd->last_command;
+    command["completed"] = cmd->last_completed;
+    root["now"] = millis();   // TODO - offset timestamp if slave!
     JsonVariant v = root;
     if (!mqtt_client.publish(config.service.mqtt.state_topic, v.as<String>().c_str())) {
       mqtt_debug("Failed to publish!");

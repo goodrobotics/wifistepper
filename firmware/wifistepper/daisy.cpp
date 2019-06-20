@@ -9,6 +9,7 @@
 
 #define CP_DAISY        (0x00)
 #define CP_MOTOR        (0x20)
+#define CP_QUEUE        (0x40)
 
 #define CMD_PING        (CP_DAISY | 0x00)
 #define CMD_ACK         (CP_DAISY | 0x01)
@@ -18,6 +19,7 @@
 #define CMD_CLEARERROR  (CP_DAISY | 0x05)
 #define CMD_WIFI        (CP_DAISY | 0x06)
 
+#define CMD_ESTOP       (CP_MOTOR | 0x00)
 #define CMD_STOP        (CP_MOTOR | 0x01)
 #define CMD_RUN         (CP_MOTOR | 0x02)
 #define CMD_STEPCLK     (CP_MOTOR | 0x03)
@@ -36,11 +38,13 @@
 #define CMD_WAITMS      (CP_MOTOR | 0x10)
 #define CMD_WAITSWITCH  (CP_MOTOR | 0x11)
 #define CMD_RUNQUEUE    (CP_MOTOR | 0x12)
-#define CMD_EMPTYQUEUE  (CP_MOTOR | 0x13)
-#define CMD_COPYQUEUE   (CP_MOTOR | 0x14)
-#define CMD_SAVEQUEUE   (CP_MOTOR | 0x15)
-#define CMD_LOADQUEUE   (CP_MOTOR | 0x16)
-#define CMD_ESTOP       (CP_MOTOR | 0x17)
+#define CMD_SETSIGNAL   (CP_MOTOR | 0x13)
+#define CMD_INCSIGNAL   (CP_MOTOR | 0x14)
+
+#define CMD_EMPTYQUEUE  (CP_QUEUE | 0x00)
+#define CMD_COPYQUEUE   (CP_QUEUE | 0x01)
+#define CMD_SAVEQUEUE   (CP_QUEUE | 0x02)
+#define CMD_LOADQUEUE   (CP_QUEUE | 0x03)
 
 #define SELF            (0x00)
 
@@ -401,6 +405,20 @@ static void daisy_slaveconsume(uint8_t q, id_t id, uint8_t opcode, void * data, 
       daisy_ack(q, id);
       break;
     }
+    case CMD_SETSIGNAL: {
+      daisy_expectlen(sizeof(cmd_signal_t));
+      cmd_signal_t * cmd = (cmd_signal_t *)data;
+      cmd_setsignal(queue, id, cmd->value);
+      daisy_ack(q, id);
+      break;
+    }
+    case CMD_INCSIGNAL: {
+      daisy_expectlen(sizeof(cmd_signal_t));
+      cmd_signal_t * cmd = (cmd_signal_t *)data;
+      cmd_incsignal(queue, id, cmd->value);
+      daisy_ack(q, id);
+      break;
+    }
     case CMD_EMPTYQUEUE: {
       daisy_expectlen(0);
       cmdq_empty(queue, id);
@@ -544,6 +562,10 @@ void daisy_update(unsigned long now) {
     sketch.daisy.last.config = now;
     daisy_slaveconfig * slaveconfig = (daisy_slaveconfig *)daisy_alloc(SELF, 0, 0, CMD_CONFIG, sizeof(daisy_slaveconfig));
     if (slaveconfig != NULL) {
+      strcpy(slaveconfig->product, PRODUCT);
+      strcpy(slaveconfig->model, MODEL);
+      strcpy(slaveconfig->branch, BRANCH);
+      slaveconfig->version = VERSION;
       memcpy(&slaveconfig->io, &config.io, sizeof(io_config));
       memcpy(&slaveconfig->motor, &config.motor, sizeof(motor_config));
     }
@@ -557,6 +579,7 @@ void daisy_update(unsigned long now) {
       memcpy(&slavestate->command, &state.command, sizeof(command_state));
       memcpy(&slavestate->wifi, &state.wifi, sizeof(wifi_state));
       memcpy(&slavestate->motor, &state.motor, sizeof(motor_state));
+      memcpy(&slavestate->signal, &state.signal, sizeof(signal_state));
     }
     daisy_pack(slavestate);
   }
@@ -668,6 +691,18 @@ bool daisy_waitswitch(uint8_t target, uint8_t q, id_t id, bool state) {
 bool daisy_runqueue(uint8_t target, uint8_t q, id_t id, uint8_t targetqueue) {
   cmd_runqueue_t * cmd = (cmd_runqueue_t *)daisy_alloc(target, q, id, CMD_RUNQUEUE, sizeof(cmd_runqueue_t));
   if (cmd != NULL) *cmd = { .targetqueue = targetqueue };
+  return daisy_pack(cmd) != NULL;
+}
+
+bool daisy_setsignal(uint8_t target, uint8_t q, id_t id, int value) {
+  cmd_signal_t * cmd = (cmd_signal_t *)daisy_alloc(target, q, id, CMD_SETSIGNAL, sizeof(cmd_signal_t));
+  if (cmd != NULL) *cmd = { .value = value };
+  return daisy_pack(cmd) != NULL;
+}
+
+bool daisy_incsignal(uint8_t target, uint8_t q, id_t id, int value) {
+  cmd_signal_t * cmd = (cmd_signal_t *)daisy_alloc(target, q, id, CMD_INCSIGNAL, sizeof(cmd_signal_t));
+  if (cmd != NULL) *cmd = { .value = value };
   return daisy_pack(cmd) != NULL;
 }
 
