@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive BOM for KiCAD</title>
+  <style type="text/css">
+:root {
+  --pcb-edge-color: black;
+}
+
+html, body {
+  margin: 0px;
+  height: 100%;
+  font-family: Verdana, sans-serif;
+}
+
+.dark {
+  --pcb-edge-color: #eee;
+  background-color: #252c30;
+  color: #eee;
+}
+
+button {
+  background-color: #eee;
+  border: 1px solid #888;
+  color: black;
+  height: 44px;
+  width: 44px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: bolder;
+}
+
+.dark button {
+  background-color: #c3b7b5; /* This will be inverted */
+}
+
+button.depressed {
+  background-color: #0a0;
+  color: white;
+}
+
+.dark button.depressed {
+  background-color: #b3b; /* This will be inverted */
+}
+
+button:focus {
+  outline: 0;
+}
+
+button#tb-btn {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAwBQTFRFAAAABQUFCAgICQkJCgoKEBAQFhYWFxcXGxsbHBwcISEhIyMjJCQkKSkpLS0tLi4uMTExNzc3PDw8QEBAQkJCRERERkZGSEhIT09PWlpaW1tbXFxcYGBgaWlpd3d3eXl5enp6f39/gICAgYGBgoKCi4uLjIyMkpKSk5OTlJSUlpaWl5eXmZmZnJycn5+foqKipqamr6+vtLS0uLi4v7+/w8PDyMjIy8vLz8/P1dXV19fX3Nzc5ubm6urq7+/v8fHx9fX1+Pj4////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAdkhsDgAAAQB0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AFP3ByUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTnU1rJkAAAA/klEQVQ4T9WT21bCMBBFB0UQRAWrVEmtDYgtXlC03m8l//9PwyQZSRfSLF/dLzmr2WtyHjqAKIJKBCJgI80rSRsIIlUeUgFBTud0LS9K5YEVorXMnFDJnwWeuULpCW61QqlkJf+mQ8wDLdmYgyUmIeRKloMOB0v464lpxMHCHYozy5yF1yRJ5O23Ez5hb6ApWJhBf3BUb32UhKGep2GBPt7DtV94hgePcPN01T6ltBQ2tohHJ+zub3ZpgBMi/ZN/OSFXxTlc+DuoXssvzDs7HuHw5Hi7drcUCqlHGozwJqUcXb5TIkFMzMUPRnBMBGAzM3vKxCEHQ9ak7fauP+ICTGDKoEYZFYYAAAAASUVORK5CYII=');
+  background-position: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+button#lr-btn {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAMAUExURQAAABYWFhcXFzIyMjc3Nzw8PD09PUBAQE9PT1ZWVldXV1paWlxcXGFhYWNjY2dnZ2xsbG5ubnFxcXNzc3V1dXZ2dnl5eYCAgIaGhpKSkpOTk5SUlJycnKKioqampqysrLGxsbe3t7+/v8XFxcnJydTU1NbW1tnZ2ebm5u/v7/z8/P///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJTAHzkAAAEAdFJOU////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wBT9wclAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAGXRFWHRTb2Z0d2FyZQBwYWludC5uZXQgNC4wLjE51NayZAAAAO5JREFUOE+tk9kSgjAMRatRcakbrogL4q7//30xobFUpOiD56XJ9ExzpzNRiDrwohEV1qLUAeQ0RDVUOno4JJBIZYi0ClKpM4pCGpQKYY/h3giJRYRB90jkAlheQsiXjGfEd6FJEbbcV2W45YIEIP6XoSBIAMIjSABChJySEaE8ZigRCnxmKHtBZOKXDCyEw9k8vnDvEeirz2vYU2UEmUe8BP6HxcgKEoBwhf7GCg4itMZzmHDvz3A6wI6qqgwpWEECEK5whrt/BAnXaYcqnwDQaC/pARZ0nN0IRsiJtcL6SjY14315V3Xa7sr1R3wC/SGCp4FJdscAAAAASUVORK5CYII=');
+  background-position: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+button#bom-btn {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAwBQTFRFAAAAFhYWFxcXQEBAXFxcYGBgkpKSk5OTlJSUn5+fr6+vv7+/z8/P////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQtWgtgAAAQB0Uk5T////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////AFP3ByUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAZdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuMTnU1rJkAAAAaElEQVQ4T+3T0QqAIAwF0JlrWub/f+5NcpCIk16Fzosv4+6CjAD2JgYITpJJHIglTwiTT+U9hq6ck68D+9D5Dpg+D2hmp1mhrTpNSdNSHTSz8/9FtVAHjk+WITJhC3qpA2Er1z09f+AGC2MyfYdXtvQAAAAASUVORK5CYII=');
+  background-position: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.left-most-button {
+  border-right: 0;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.middle-button {
+  border-right: 0;
+}
+
+.right-most-button {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.button-container {
+  font-size: 0;
+}
+
+.dark .button-container {
+  filter: invert(1);
+}
+
+@media print {
+  .hideonprint {
+    display: none;
+  }
+}
+
+canvas {
+  cursor: crosshair;
+}
+
+canvas:active {
+  cursor: grabbing;
+}
+
+.fileinfo {
+  width: 100%;
+  max-width: 1000px;
+  border: none;
+  padding: 5px;
+}
+
+.fileinfo .title {
+  font-size: 20pt;
+  font-weight: bold;
+}
+
+.fileinfo td {
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 1px;
+  width: 50%;
+  text-overflow: ellipsis;
+}
+
+.bom {
+  border-collapse: collapse;
+  font-family: Consolas, "DejaVu Sans Mono", Monaco, monospace;
+  font-size: 10pt;
+  table-layout: fixed;
+  width: 100%;
+  margin-top: 1px;
+}
+
+.bom th, .bom td {
+  border: 1px solid black;
+  padding: 5px;
+  word-wrap: break-word;
+  text-align: center;
+}
+
+.dark .bom th, .dark .bom td {
+  border: 1px solid #777;
+}
+
+.bom th {
+  background-color: #CCCCCC;
+}
+
+.dark .bom th {
+  background-color: #3b4749;
+}
+
+.bom tr.highlighted:nth-child(n) {
+  background-color: #cfc;
+}
+
+.dark .bom tr.highlighted:nth-child(n) {
+  background-color: #226022;
+}
+
+.bom tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.dark .bom tr:nth-child(even) {
+  background-color: #313b40;
+}
+
+.bom tr {
+  transition: background-color 0.2s;
+}
+
+.bom .numCol {
+  width: 25px;
+}
+
+.bom .bom-checkbox {
+  width: 30px;
+}
+
+.bom .Description {
+  width: 10%;
+}
+
+.bom .Part {
+  width: 10%;
+}
+
+.bom .Value {
+  width: 15%;
+}
+
+.bom .Quantity {
+  width: 65px;
+}
+
+.split {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.split.split-horizontal, .gutter.gutter-horizontal {
+  height: 100%;
+  float: left;
+}
+
+.gutter {
+  background-color: #ddd;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transition: background-color 0.3s;
+}
+
+.dark .gutter {
+  background-color: #777;
+}
+
+.gutter.gutter-horizontal {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+  cursor: ew-resize;
+  width: 5px;
+}
+
+.gutter.gutter-vertical {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+  cursor: ns-resize;
+  height: 5px;
+}
+
+.searchbox {
+  float: left;
+  height: 40px;
+  margin: 10px 5px;
+  padding: 12px 32px;
+  font-family: Consolas, "DejaVu Sans Mono", Monaco, monospace;
+  font-size: 18px;
+  box-sizing: border-box;
+  border: 1px solid #888;
+  border-radius: 6px;
+  outline: none;
+  background-color: #eee;
+  transition: background-color 0.2s, border 0.2s;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABNklEQVQ4T8XSMUvDQBQH8P/LElFa/AIZHcTBQSz0I/gFstTBRR2KUC4ldDxw7h0Bl3RRUATxi4iiODgoiLNrbQYp5J6cpJJqomkX33Z37/14d/dIa33MzDuYI4johOI4XhyNRteO46zNYjDzAxE1yBZprVeZ+QbAUhXEGJMA2Ox2u4+fQIa0mPmsCgCgJYQ4t7lfgF0opQYAdv9ABkKI/UnOFCClXKjX61cA1osQY8x9kiRNKeV7IWA3oyhaSdP0FkAtjxhj3hzH2RBCPOf3pzqYHCilfAAX+URm9oMguPzeWSGQvUcMYC8rOBJCHBRdqxTo9/vbRHRqi8bj8XKv1xvODbiuW2u32/bvf0SlDv4XYOY7z/Mavu+nM1+BmQ+NMc0wDF/LprP0DbTWW0T00ul0nn4b7Q87+X4Qmfiq2wAAAABJRU5ErkJggg==');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+}
+
+.dark .searchbox {
+  background-color: #111;
+  color: #eee;
+}
+
+.searchbox::placeholder {
+  color: #ccc;
+}
+
+.dark .searchbox::placeholder {
+  color: #666;
+}
+
+.filter {
+  width: calc(60% - 10px);
+}
+
+.reflookup {
+  width: calc(40% - 10px);
+}
+
+input[type=text]:focus {
+  background-color: white;
+  border: 1px solid #333;
+}
+
+.dark input[type=text]:focus {
+  background-color: #333;
+  border: 1px solid #ccc;
+}
+
+mark.highlight {
+  background-color: #5050ff;
+  color: #fff;
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.dark mark.highlight {
+  background-color: #76a6da;
+  color: #111;
+}
+
+.menubtn {
+  background-color: white;
+  font-size: 16px;
+  border: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 20 20'%3E%3Cpath fill='none' d='M0 0h20v20H0V0z'/%3E%3Cpath d='M15.95 10.78c.03-.25.05-.51.05-.78s-.02-.53-.06-.78l1.69-1.32c.15-.12.19-.34.1-.51l-1.6-2.77c-.1-.18-.31-.24-.49-.18l-1.99.8c-.42-.32-.86-.58-1.35-.78L12 2.34c-.03-.2-.2-.34-.4-.34H8.4c-.2 0-.36.14-.39.34l-.3 2.12c-.49.2-.94.47-1.35.78l-1.99-.8c-.18-.07-.39 0-.49.18l-1.6 2.77c-.1.18-.06.39.1.51l1.69 1.32c-.04.25-.07.52-.07.78s.02.53.06.78L2.37 12.1c-.15.12-.19.34-.1.51l1.6 2.77c.1.18.31.24.49.18l1.99-.8c.42.32.86.58 1.35.78l.3 2.12c.04.2.2.34.4.34h3.2c.2 0 .37-.14.39-.34l.3-2.12c.49-.2.94-.47 1.35-.78l1.99.8c.18.07.39 0 .49-.18l1.6-2.77c.1-.18.06-.39-.1-.51l-1.67-1.32zM10 13c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z'/%3E%3C/svg%3E%0A");
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dark .menubtn {
+  filter: invert(1);
+}
+
+.menu {
+  position: relative;
+  display: inline-block;
+}
+
+.menu-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  right: 0;
+  min-width: 300px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  padding: 8px;
+}
+
+.dark .menu-content {
+  background-color: #111;
+}
+
+.menu:hover .menu-content {
+  display: block;
+}
+
+.menu:hover .menubtn {
+  background-color: #eee;
+}
+
+.dark .menu:hover .menubtn {
+}
+
+.menu-label {
+  display: inline-block;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-top: 0;
+  width: calc(100% - 18px);
+}
+
+.menu-label-top {
+  border-top: 1px solid #ccc;
+}
+
+.menu-textbox {
+  float: left;
+  height: 24px;
+  margin: 10px 5px;
+  padding: 5px 5px;
+  font-family: Consolas, "DejaVu Sans Mono", Monaco, monospace;
+  font-size: 14px;
+  box-sizing: border-box;
+  border: 1px solid #888;
+  border-radius: 4px;
+  outline: none;
+  background-color: #eee;
+  transition: background-color 0.2s, border 0.2s;
+  width: calc(100% - 10px);
+}
+
+.dark .menu-textbox {
+  background-color: #222;
+  color: #eee;
+}
+
+#topmostdiv {
+  transition: background-color 0.3s;
+}
+
+#top {
+  height: 78px;
+  border-bottom: 2px solid black;
+}
+
+.dark #top {
+  border-bottom: 2px solid #ccc;
+}
+
+#dbg {
+  display: block;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #aaa;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+  </style>
+  <script type="text/javascript" >
+///////////////////////////////////////////////
+/*
+  Split.js - v1.3.5
+  MIT License
+  https://github.com/nathancahill/Split.js
+*/
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):e.Split=t()}(this,function(){"use strict";var e=window,t=e.document,n="addEventListener",i="removeEventListener",r="getBoundingClientRect",s=function(){return!1},o=e.attachEvent&&!e[n],a=["","-webkit-","-moz-","-o-"].filter(function(e){var n=t.createElement("div");return n.style.cssText="width:"+e+"calc(9px)",!!n.style.length}).shift()+"calc",l=function(e){return"string"==typeof e||e instanceof String?t.querySelector(e):e};return function(u,c){function z(e,t,n){var i=A(y,t,n);Object.keys(i).forEach(function(t){return e.style[t]=i[t]})}function h(e,t){var n=B(y,t);Object.keys(n).forEach(function(t){return e.style[t]=n[t]})}function f(e){var t=E[this.a],n=E[this.b],i=t.size+n.size;t.size=e/this.size*i,n.size=i-e/this.size*i,z(t.element,t.size,this.aGutterSize),z(n.element,n.size,this.bGutterSize)}function m(e){var t;this.dragging&&((t="touches"in e?e.touches[0][b]-this.start:e[b]-this.start)<=E[this.a].minSize+M+this.aGutterSize?t=E[this.a].minSize+this.aGutterSize:t>=this.size-(E[this.b].minSize+M+this.bGutterSize)&&(t=this.size-(E[this.b].minSize+this.bGutterSize)),f.call(this,t),c.onDrag&&c.onDrag())}function g(){var e=E[this.a].element,t=E[this.b].element;this.size=e[r]()[y]+t[r]()[y]+this.aGutterSize+this.bGutterSize,this.start=e[r]()[G]}function d(){var t=this,n=E[t.a].element,r=E[t.b].element;t.dragging&&c.onDragEnd&&c.onDragEnd(),t.dragging=!1,e[i]("mouseup",t.stop),e[i]("touchend",t.stop),e[i]("touchcancel",t.stop),t.parent[i]("mousemove",t.move),t.parent[i]("touchmove",t.move),delete t.stop,delete t.move,n[i]("selectstart",s),n[i]("dragstart",s),r[i]("selectstart",s),r[i]("dragstart",s),n.style.userSelect="",n.style.webkitUserSelect="",n.style.MozUserSelect="",n.style.pointerEvents="",r.style.userSelect="",r.style.webkitUserSelect="",r.style.MozUserSelect="",r.style.pointerEvents="",t.gutter.style.cursor="",t.parent.style.cursor=""}function S(t){var i=this,r=E[i.a].element,o=E[i.b].element;!i.dragging&&c.onDragStart&&c.onDragStart(),t.preventDefault(),i.dragging=!0,i.move=m.bind(i),i.stop=d.bind(i),e[n]("mouseup",i.stop),e[n]("touchend",i.stop),e[n]("touchcancel",i.stop),i.parent[n]("mousemove",i.move),i.parent[n]("touchmove",i.move),r[n]("selectstart",s),r[n]("dragstart",s),o[n]("selectstart",s),o[n]("dragstart",s),r.style.userSelect="none",r.style.webkitUserSelect="none",r.style.MozUserSelect="none",r.style.pointerEvents="none",o.style.userSelect="none",o.style.webkitUserSelect="none",o.style.MozUserSelect="none",o.style.pointerEvents="none",i.gutter.style.cursor=j,i.parent.style.cursor=j,g.call(i)}function v(e){e.forEach(function(t,n){if(n>0){var i=F[n-1],r=E[i.a],s=E[i.b];r.size=e[n-1],s.size=t,z(r.element,r.size,i.aGutterSize),z(s.element,s.size,i.bGutterSize)}})}function p(){F.forEach(function(e){e.parent.removeChild(e.gutter),E[e.a].element.style[y]="",E[e.b].element.style[y]=""})}void 0===c&&(c={});var y,b,G,E,w=l(u[0]).parentNode,D=e.getComputedStyle(w).flexDirection,U=c.sizes||u.map(function(){return 100/u.length}),k=void 0!==c.minSize?c.minSize:100,x=Array.isArray(k)?k:u.map(function(){return k}),L=void 0!==c.gutterSize?c.gutterSize:10,M=void 0!==c.snapOffset?c.snapOffset:30,O=c.direction||"horizontal",j=c.cursor||("horizontal"===O?"ew-resize":"ns-resize"),C=c.gutter||function(e,n){var i=t.createElement("div");return i.className="gutter gutter-"+n,i},A=c.elementStyle||function(e,t,n){var i={};return"string"==typeof t||t instanceof String?i[e]=t:i[e]=o?t+"%":a+"("+t+"% - "+n+"px)",i},B=c.gutterStyle||function(e,t){return n={},n[e]=t+"px",n;var n};"horizontal"===O?(y="width","clientWidth",b="clientX",G="left","paddingLeft"):"vertical"===O&&(y="height","clientHeight",b="clientY",G="top","paddingTop");var F=[];return E=u.map(function(e,t){var i,s={element:l(e),size:U[t],minSize:x[t]};if(t>0&&(i={a:t-1,b:t,dragging:!1,isFirst:1===t,isLast:t===u.length-1,direction:O,parent:w},i.aGutterSize=L,i.bGutterSize=L,i.isFirst&&(i.aGutterSize=L/2),i.isLast&&(i.bGutterSize=L/2),"row-reverse"===D||"column-reverse"===D)){var a=i.a;i.a=i.b,i.b=a}if(!o&&t>0){var c=C(t,O);h(c,L),c[n]("mousedown",S.bind(i)),c[n]("touchstart",S.bind(i)),w.insertBefore(c,s.element),i.gutter=c}0===t||t===u.length-1?z(s.element,s.size,L/2):z(s.element,s.size,L);var f=s.element[r]()[y];return f<s.minSize&&(s.minSize=f),t>0&&F.push(i),s}),o?{setSizes:v,destroy:p}:{setSizes:v,getSizes:function(){return E.map(function(e){return e.size})},collapse:function(e){if(e===F.length){var t=F[e-1];g.call(t),o||f.call(t,t.size-t.bGutterSize)}else{var n=F[e];g.call(n),o||f.call(n,n.aGutterSize)}},destroy:p}}});
+
+///////////////////////////////////////////////
+
+///////////////////////////////////////////////
+var pcbdata = {"modules": {"R7": {"layer": "F", "center": [95.1737, 63.703199999999995], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [95.96119999999999, 63.703199999999995], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -180.0, "pos": [94.3862, 63.703199999999995], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R7", "bbox": {"pos": [93.66869899999999, 62.948198999999995], "size": [3.010002, 1.5100019999999998]}}, "U4": {"layer": "F", "center": [93.726, 105.57], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [91.821, 108.27], "shape": "rect", "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.5499999999999998, 0.6]}, {"layers": ["F"], "angle": -90.0, "pos": [93.091, 108.27], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.5499999999999998, 0.6]}, {"layers": ["F"], "angle": -90.0, "pos": [94.36099999999999, 108.27], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.5499999999999998, 0.6]}, {"layers": ["F"], "angle": -90.0, "pos": [95.631, 108.27], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.5499999999999998, 0.6]}, {"layers": ["F"], "angle": -90.0, "pos": [95.631, 102.86999999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.5499999999999998, 0.6]}, {"layers": ["F"], "angle": -90.0, "pos": [94.36099999999999, 102.86999999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.5499999999999998, 0.6]}, {"layers": ["F"], "angle": -90.0, "pos": [93.091, 102.86999999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.5499999999999998, 0.6]}, {"layers": ["F"], "angle": -90.0, "pos": [91.821, 102.86999999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.5499999999999998, 0.6]}], "drawings": [], "ref": "U4", "bbox": {"pos": [91.000999, 101.814999], "size": [5.450002, 7.510002]}}, "U1": {"layer": "F", "center": [91.398, 80.69149999999999], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [104.298, 71.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [102.798, 71.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [101.298, 71.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [99.798, 71.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [98.298, 71.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [96.798, 71.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [95.298, 71.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [93.798, 71.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [92.298, 71.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [92.298, 89.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [93.798, 89.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [95.298, 89.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [96.798, 89.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [98.298, 89.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [99.798, 89.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [101.298, 89.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [102.798, 89.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [104.298, 89.69149999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.7, 0.8999999999999999]}, {"layers": ["F"], "angle": -270.0, "pos": [97.71799999999999, 81.8115], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [4.3, 4.3]}], "drawings": [], "ref": "U1", "bbox": {"pos": [91.148, 70.8415], "size": [20.325001, 19.7]}}, "U3": {"layer": "F", "center": [84.902, 104.779], "pads": [{"layers": ["F"], "angle": -0.0, "pos": [83.952, 104.029], "shape": "rect", "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.85, 0.3]}, {"layers": ["F"], "angle": -0.0, "pos": [83.952, 104.529], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.85, 0.3]}, {"layers": ["F"], "angle": -0.0, "pos": [83.952, 105.029], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.85, 0.3]}, {"layers": ["F"], "angle": -0.0, "pos": [83.952, 105.529], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.85, 0.3]}, {"layers": ["F"], "angle": -0.0, "pos": [85.85199999999999, 105.529], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.85, 0.3]}, {"layers": ["F"], "angle": -0.0, "pos": [85.85199999999999, 105.029], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.85, 0.3]}, {"layers": ["F"], "angle": -0.0, "pos": [85.85199999999999, 104.529], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.85, 0.3]}, {"layers": ["F"], "angle": -0.0, "pos": [85.85199999999999, 104.029], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.85, 0.3]}], "drawings": [], "ref": "U3", "bbox": {"pos": [83.22699899999999, 103.403999], "size": [3.350002, 2.750002]}}, "U2": {"layer": "F", "center": [63.245999999999995, 89.789], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [67.336, 95.044], "shape": "custom", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "polygons": [[[0.51, -1.425], [1.07, -1.425], [1.07, 1.425], [-1.07, 1.425], [-1.07, 1.025], [-1.7999999999999998, 1.025], [-1.7999999999999998, -1.145], [-1.07, -1.145], [-1.07, -1.425], [-0.9299999999999999, -1.425], [-0.9299999999999999, -2.145], [0.51, -2.145]]], "size": [2.14, 2.85]}, {"layers": ["F"], "angle": -180.0, "pos": [59.156, 95.044], "shape": "custom", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "polygons": [[[0.9299999999999999, -1.425], [1.07, -1.425], [1.07, -1.145], [1.7999999999999998, -1.145], [1.7999999999999998, 1.025], [1.07, 1.025], [1.07, 1.425], [-1.07, 1.425], [-1.07, -1.425], [-0.51, -1.425], [-0.51, -2.145], [0.9299999999999999, -2.145]]], "size": [2.14, 2.85]}, {"layers": ["F"], "angle": -180.0, "pos": [59.156, 84.53399999999999], "shape": "custom", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "polygons": [[[1.07, -1.025], [1.7999999999999998, -1.025], [1.7999999999999998, 1.145], [1.07, 1.145], [1.07, 1.425], [0.9299999999999999, 1.425], [0.9299999999999999, 2.145], [-0.51, 2.145], [-0.51, 1.425], [-1.07, 1.425], [-1.07, -1.425], [1.07, -1.425]]], "size": [2.14, 2.85]}, {"layers": ["F"], "angle": -180.0, "pos": [67.336, 84.53399999999999], "shape": "custom", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "polygons": [[[1.07, 1.425], [0.51, 1.425], [0.51, 2.145], [-0.9299999999999999, 2.145], [-0.9299999999999999, 1.425], [-1.07, 1.425], [-1.07, 1.145], [-1.7999999999999998, 1.145], [-1.7999999999999998, -1.025], [-1.07, -1.025], [-1.07, -1.425], [1.07, -1.425]]], "size": [2.14, 2.85]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 93.039], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 92.439], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 92.039], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 91.639], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 90.90899999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 90.189], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 86.539], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 87.139], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 87.869], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 88.26899999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 88.98899999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 89.789], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [57.745999999999995, 89.389], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 93.039], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 92.439], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 91.999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 91.59899999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 91.199], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 90.79899999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 90.399], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 89.999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 86.539], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 87.139], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 87.579], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 87.979], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 88.37899999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 88.779], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 89.179], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [68.746, 89.579], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.7999999999999999, 0.19999999999999998]}, {"layers": ["F"], "angle": -180.0, "pos": [65.756, 96.789], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.19999999999999998, 0.7999999999999999]}, {"layers": ["F"], "angle": -180.0, "pos": [60.736, 96.789], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.19999999999999998, 0.7999999999999999]}, {"layers": ["F"], "angle": -180.0, "pos": [62.936, 96.789], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.19999999999999998, 0.7999999999999999]}, {"layers": ["F"], "angle": -180.0, "pos": [63.556, 96.789], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.19999999999999998, 0.7999999999999999]}, {"layers": ["F"], "angle": -180.0, "pos": [65.756, 82.789], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.19999999999999998, 0.7999999999999999]}, {"layers": ["F"], "angle": -180.0, "pos": [60.736, 82.789], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.19999999999999998, 0.7999999999999999]}, {"layers": ["F"], "angle": -180.0, "pos": [62.936, 82.789], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.19999999999999998, 0.7999999999999999]}, {"layers": ["F"], "angle": -180.0, "pos": [63.556, 82.789], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.19999999999999998, 0.7999999999999999]}, {"layers": ["F"], "angle": -180.0, "pos": [61.836, 82.98899999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.16, 1.2]}, {"layers": ["F"], "angle": -180.0, "pos": [64.65599999999999, 82.98899999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.16, 1.2]}, {"layers": ["F"], "angle": -180.0, "pos": [61.836, 96.589], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.16, 1.2]}, {"layers": ["F"], "angle": -180.0, "pos": [64.65599999999999, 96.589], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.16, 1.2]}, {"layers": ["F"], "angle": -180.0, "pos": [61.876, 85.524], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [2.3, 3.01]}, {"layers": ["F"], "angle": -180.0, "pos": [64.616, 85.524], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [2.3, 3.01]}, {"layers": ["F"], "angle": -180.0, "pos": [61.876, 94.054], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [2.3, 3.01]}, {"layers": ["F"], "angle": -180.0, "pos": [64.616, 94.054], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [2.3, 3.01]}, {"layers": ["F"], "angle": -180.0, "pos": [63.245999999999995, 89.789], "shape": "rect", "offset": [0.08, 0.0], "pin1": false, "type": "smd", "size": [5.5, 4.68]}], "drawings": [], "ref": "U2", "bbox": {"pos": [57.346, 82.389], "size": [12.200001, 15.200000999999999]}}, "JP1": {"layer": "B", "center": [63.373, 68.692], "pads": [{"layers": ["B"], "angle": -90.0, "pos": [63.373, 68.042], "shape": "custom", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "polygons": [[[0.0, -7.997592], [0.049009, -7.997592], [0.145142, -7.97847], [0.235698, -7.940961], [0.317197, -7.886505], [0.386505, -7.817196999999999], [0.440961, -7.735697999999999], [0.47846999999999995, -7.645142], [0.497592, -7.549009], [0.497592, -7.5], [0.5, -7.5], [0.5, 7.5], [0.497592, 7.5], [0.497592, 7.549009], [0.47846999999999995, 7.645142], [0.440961, 7.735697999999999], [0.386505, 7.817196999999999], [0.317197, 7.886505], [0.235698, 7.940961], [0.145142, 7.97847], [0.049009, 7.997592], [0.0, 7.997592], [0.0, 8.0], [-0.5, 8.0], [-0.5, -8.0], [0.0, -8.0]]], "size": [1.0, 15.0]}, {"layers": ["B"], "angle": -90.0, "pos": [63.373, 69.342], "shape": "custom", "offset": [0.0, 0.0], "pin1": true, "type": "smd", "polygons": [[[0.5, 8.0], [0.0, 8.0], [0.0, 7.997592], [-0.049009, 7.997592], [-0.145142, 7.97847], [-0.235698, 7.940961], [-0.317197, 7.886505], [-0.386505, 7.817196999999999], [-0.440961, 7.735697999999999], [-0.47846999999999995, 7.645142], [-0.497592, 7.549009], [-0.497592, 7.5], [-0.5, 7.5], [-0.5, -7.5], [-0.497592, -7.5], [-0.497592, -7.549009], [-0.47846999999999995, -7.645142], [-0.440961, -7.735697999999999], [-0.386505, -7.817196999999999], [-0.317197, -7.886505], [-0.235698, -7.940961], [-0.145142, -7.97847], [-0.049009, -7.997592], [0.0, -7.997592], [0.0, -8.0], [0.5, -8.0]]], "size": [1.0, 15.0]}], "drawings": [], "ref": "JP1", "bbox": {"pos": [55.373, 67.542], "size": [16.0, 2.3]}}, "C19": {"layer": "F", "center": [81.91499999999999, 105.81649999999999], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [81.91499999999999, 106.604], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -270.0, "pos": [81.91499999999999, 105.029], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "C19", "bbox": {"pos": [81.159999, 104.311499], "size": [1.5100019999999998, 3.010002]}}, "C18": {"layer": "F", "center": [79.3115, 97.03099999999999], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [79.3115, 95.631], "shape": "roundrect", "radius": 0.25, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.25, 1.75]}, {"layers": ["F"], "angle": -90.0, "pos": [79.3115, 98.431], "shape": "roundrect", "radius": 0.25, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.25, 1.75]}], "drawings": [], "ref": "C18", "bbox": {"pos": [78.166499, 94.725999], "size": [2.290002, 4.610002]}}, "RS5": {"layer": "F", "center": [63.1063, 109.1267], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [63.1063, 106.2267], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}, {"layers": ["F"], "angle": -90.0, "pos": [63.1063, 112.02669999999999], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}], "drawings": [], "ref": "RS5", "bbox": {"pos": [61.161299, 105.28169899999999], "size": [3.890002, 7.690002]}}, "C13": {"layer": "F", "center": [49.53, 89.86749999999999], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [49.53, 88.92999999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -90.0, "pos": [49.53, 90.80499999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C13", "bbox": {"pos": [48.554998999999995, 88.162499], "size": [1.950002, 3.410002]}}, "C12": {"layer": "F", "center": [52.2985, 93.97999999999999], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [53.086, 93.97999999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -180.0, "pos": [51.510999999999996, 93.97999999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "C12", "bbox": {"pos": [50.793499, 93.224999], "size": [3.010002, 1.5100019999999998]}}, "C11": {"layer": "F", "center": [72.83449999999999, 74.35849999999999], "pads": [{"layers": ["F", "B"], "angle": -0.0, "pos": [72.83449999999999, 74.35849999999999], "drillsize": [1.0, 1.0], "shape": "rect", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": true, "type": "th", "size": [2.0, 2.0]}, {"layers": ["F", "B"], "angle": -0.0, "pos": [77.83449999999999, 74.35849999999999], "drillsize": [1.0, 1.0], "shape": "circle", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [2.0, 2.0]}], "drawings": [], "ref": "C11", "bbox": {"pos": [69.794853, 69.083499], "size": [10.814648, 10.550002]}}, "JP2": {"layer": "B", "center": [63.119, 110.871], "pads": [{"layers": ["B"], "angle": -270.0, "pos": [63.119, 111.521], "shape": "custom", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "polygons": [[[0.0, -7.997592], [0.049009, -7.997592], [0.145142, -7.97847], [0.235698, -7.940961], [0.317197, -7.886505], [0.386505, -7.817196999999999], [0.440961, -7.735697999999999], [0.47846999999999995, -7.645142], [0.497592, -7.549009], [0.497592, -7.5], [0.5, -7.5], [0.5, 7.5], [0.497592, 7.5], [0.497592, 7.549009], [0.47846999999999995, 7.645142], [0.440961, 7.735697999999999], [0.386505, 7.817196999999999], [0.317197, 7.886505], [0.235698, 7.940961], [0.145142, 7.97847], [0.049009, 7.997592], [0.0, 7.997592], [0.0, 8.0], [-0.5, 8.0], [-0.5, -8.0], [0.0, -8.0]]], "size": [1.0, 15.0]}, {"layers": ["B"], "angle": -270.0, "pos": [63.119, 110.22099999999999], "shape": "custom", "offset": [0.0, 0.0], "pin1": true, "type": "smd", "polygons": [[[0.5, 8.0], [0.0, 8.0], [0.0, 7.997592], [-0.049009, 7.997592], [-0.145142, 7.97847], [-0.235698, 7.940961], [-0.317197, 7.886505], [-0.386505, 7.817196999999999], [-0.440961, 7.735697999999999], [-0.47846999999999995, 7.645142], [-0.497592, 7.549009], [-0.497592, 7.5], [-0.5, 7.5], [-0.5, -7.5], [-0.497592, -7.5], [-0.497592, -7.549009], [-0.47846999999999995, -7.645142], [-0.440961, -7.735697999999999], [-0.386505, -7.817196999999999], [-0.317197, -7.886505], [-0.235698, -7.940961], [-0.145142, -7.97847], [-0.049009, -7.997592], [0.0, -7.997592], [0.0, -8.0], [0.5, -8.0]]], "size": [1.0, 15.0]}], "drawings": [], "ref": "JP2", "bbox": {"pos": [55.119, 109.72099999999999], "size": [16.0, 2.3]}}, "C17": {"layer": "F", "center": [96.139, 66.675], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [96.139, 67.46249999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -90.0, "pos": [96.139, 65.8875], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "C17", "bbox": {"pos": [95.38399899999999, 65.16999899999999], "size": [1.5100019999999998, 3.010002]}}, "C16": {"layer": "F", "center": [102.997, 66.6495], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [102.997, 67.437], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -90.0, "pos": [102.997, 65.862], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "C16", "bbox": {"pos": [102.24199899999999, 65.144499], "size": [1.5100019999999998, 3.010002]}}, "C15": {"layer": "F", "center": [100.96499999999999, 66.4995], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [100.96499999999999, 65.562], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -90.0, "pos": [100.96499999999999, 67.437], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C15", "bbox": {"pos": [99.989999, 64.794499], "size": [1.950002, 3.410002]}}, "C14": {"layer": "F", "center": [80.137, 83.33749999999999], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [80.137, 84.125], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -90.0, "pos": [80.137, 82.55], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "C14", "bbox": {"pos": [79.381999, 81.832499], "size": [1.5100019999999998, 3.010002]}}, "R14": {"layer": "F", "center": [87.7315, 107.6325], "pads": [{"layers": ["F"], "angle": -0.0, "pos": [88.51899999999999, 107.6325], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -0.0, "pos": [86.944, 107.6325], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R14", "bbox": {"pos": [86.22649899999999, 106.877499], "size": [3.010002, 1.5100019999999998]}}, "R15": {"layer": "F", "center": [85.89, 109.47399999999999], "pads": [{"layers": ["F"], "angle": -0.0, "pos": [85.10249999999999, 109.47399999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -0.0, "pos": [86.6775, 109.47399999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R15", "bbox": {"pos": [84.384999, 108.718999], "size": [3.010002, 1.5100019999999998]}}, "R12": {"layer": "F", "center": [94.4245, 66.70049999999999], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [94.4245, 67.488], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -90.0, "pos": [94.4245, 65.913], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R12", "bbox": {"pos": [93.669499, 65.195499], "size": [1.5100019999999998, 3.010002]}}, "R13": {"layer": "F", "center": [97.917, 66.70049999999999], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [97.917, 65.913], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -90.0, "pos": [97.917, 67.488], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R13", "bbox": {"pos": [97.161999, 65.195499], "size": [1.5100019999999998, 3.010002]}}, "R10": {"layer": "F", "center": [106.6165, 93.8785], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [106.6165, 93.091], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -90.0, "pos": [106.6165, 94.666], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R10", "bbox": {"pos": [105.861499, 92.373499], "size": [1.5100019999999998, 3.010002]}}, "R11": {"layer": "F", "center": [104.178, 94.615], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [104.96549999999999, 94.615], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -180.0, "pos": [103.39049999999999, 94.615], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R11", "bbox": {"pos": [102.67299899999999, 93.859999], "size": [3.010002, 1.5100019999999998]}}, "RS1": {"layer": "F", "center": [59.309, 71.988], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [59.309, 74.88799999999999], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}, {"layers": ["F"], "angle": -270.0, "pos": [59.309, 69.088], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}], "drawings": [], "ref": "RS1", "bbox": {"pos": [57.363999, 68.142999], "size": [3.890002, 7.690002]}}, "C9": {"layer": "F", "center": [52.387499999999996, 110.729], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [52.387499999999996, 111.6665], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -270.0, "pos": [52.387499999999996, 109.7915], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C9", "bbox": {"pos": [51.412499, 109.02399899999999], "size": [1.950002, 3.410002]}}, "C8": {"layer": "F", "center": [55.8165, 74.0895], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [55.8165, 75.027], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -90.0, "pos": [55.8165, 73.152], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C8", "bbox": {"pos": [54.841499, 72.38449899999999], "size": [1.950002, 3.410002]}}, "RS2": {"layer": "F", "center": [63.373, 71.988], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [63.373, 74.88799999999999], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}, {"layers": ["F"], "angle": -270.0, "pos": [63.373, 69.088], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}], "drawings": [], "ref": "RS2", "bbox": {"pos": [61.427999, 68.142999], "size": [3.890002, 7.690002]}}, "C3": {"layer": "F", "center": [49.53, 86.05749999999999], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [49.53, 86.99499999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -90.0, "pos": [49.53, 85.11999999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C3", "bbox": {"pos": [48.554998999999995, 84.352499], "size": [1.950002, 3.410002]}}, "C2": {"layer": "F", "center": [52.832, 91.36149999999999], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [52.832, 90.42399999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -270.0, "pos": [52.832, 92.29899999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C2", "bbox": {"pos": [51.856998999999995, 89.656499], "size": [1.950002, 3.410002]}}, "C1": {"layer": "F", "center": [51.686, 98.55199999999999], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [53.086, 98.55199999999999], "shape": "roundrect", "radius": 0.25, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.25, 1.75]}, {"layers": ["F"], "angle": -180.0, "pos": [50.285999999999994, 98.55199999999999], "shape": "roundrect", "radius": 0.25, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.25, 1.75]}], "drawings": [], "ref": "C1", "bbox": {"pos": [49.380998999999996, 97.406999], "size": [4.610002, 2.290002]}}, "RS3": {"layer": "F", "center": [67.437, 71.988], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [67.437, 69.088], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}, {"layers": ["F"], "angle": -270.0, "pos": [67.437, 74.88799999999999], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}], "drawings": [], "ref": "RS3", "bbox": {"pos": [65.49199899999999, 68.142999], "size": [3.890002, 7.690002]}}, "C7": {"layer": "F", "center": [75.48649999999999, 83.82], "pads": [{"layers": ["F"], "angle": -0.0, "pos": [76.42399999999999, 83.82], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -0.0, "pos": [74.54899999999999, 83.82], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C7", "bbox": {"pos": [73.781499, 82.844999], "size": [3.410002, 1.950002]}}, "C6": {"layer": "F", "center": [75.2475, 95.69449999999999], "pads": [{"layers": ["F"], "angle": -0.0, "pos": [74.31, 95.69449999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -0.0, "pos": [76.185, 95.69449999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C6", "bbox": {"pos": [73.54249899999999, 94.719499], "size": [3.410002, 1.950002]}}, "C5": {"layer": "F", "center": [49.275999999999996, 82.57549999999999], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [49.275999999999996, 81.788], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -90.0, "pos": [49.275999999999996, 83.363], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "C5", "bbox": {"pos": [48.520998999999996, 81.070499], "size": [1.5100019999999998, 3.010002]}}, "C4": {"layer": "F", "center": [52.1485, 96.012], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [53.086, 96.012], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -180.0, "pos": [51.211, 96.012], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C4", "bbox": {"pos": [50.443498999999996, 95.036999], "size": [3.410002, 1.950002]}}, "C22": {"layer": "F", "center": [75.66669999999999, 88.9508], "pads": [{"layers": ["F"], "angle": -0.0, "pos": [74.8792, 88.9508], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -0.0, "pos": [76.4542, 88.9508], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "C22", "bbox": {"pos": [74.161699, 88.195799], "size": [3.010002, 1.5100019999999998]}}, "C20": {"layer": "F", "center": [88.8515, 102.86999999999999], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [87.914, 102.86999999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -180.0, "pos": [89.789, 102.86999999999999], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "C20", "bbox": {"pos": [87.14649899999999, 101.894999], "size": [3.410002, 1.950002]}}, "C21": {"layer": "F", "center": [91.821, 99.657], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [91.821, 100.44449999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -270.0, "pos": [91.821, 98.8695], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "C21", "bbox": {"pos": [91.06599899999999, 98.15199899999999], "size": [1.5100019999999998, 3.010002]}}, "R0": {"layer": "F", "center": [83.05799999999999, 99.432], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [83.05799999999999, 100.457], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.15, 1.4]}, {"layers": ["F"], "angle": -90.0, "pos": [83.05799999999999, 98.407], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.15, 1.4]}], "drawings": [], "ref": "R0", "bbox": {"pos": [82.082999, 97.55699899999999], "size": [1.950002, 3.750002]}}, "R1": {"layer": "F", "center": [52.832, 82.57549999999999], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [52.832, 81.788], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -270.0, "pos": [52.832, 83.363], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R1", "bbox": {"pos": [52.076999, 81.070499], "size": [1.5100019999999998, 3.010002]}}, "R2": {"layer": "F", "center": [51.053999999999995, 82.57549999999999], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [51.053999999999995, 83.363], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -90.0, "pos": [51.053999999999995, 81.788], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R2", "bbox": {"pos": [50.298998999999995, 81.070499], "size": [1.5100019999999998, 3.010002]}}, "REF**": {"layer": "F", "center": [37.413, 65.0], "pads": [{"layers": ["F", "B"], "angle": -0.0, "pos": [37.413, 65.0], "drillsize": [3.1999999999999997, 3.1999999999999997], "shape": "circle", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": true, "type": "th", "size": [3.1999999999999997, 3.1999999999999997]}], "drawings": [], "ref": "REF**", "bbox": {"pos": [33.937999, 61.524998999999994], "size": [6.950002, 6.950002]}}, "R8": {"layer": "F", "center": [84.89949999999999, 93.2435], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [84.89949999999999, 92.45599999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -90.0, "pos": [84.89949999999999, 94.03099999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R8", "bbox": {"pos": [84.144499, 91.73849899999999], "size": [1.5100019999999998, 3.010002]}}, "R9": {"layer": "F", "center": [87.4015, 92.45599999999999], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [86.61399999999999, 92.45599999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.875, 0.95]}, {"layers": ["F"], "angle": -180.0, "pos": [88.189, 92.45599999999999], "shape": "roundrect", "radius": 0.21875, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.875, 0.95]}], "drawings": [], "ref": "R9", "bbox": {"pos": [85.89649899999999, 91.700999], "size": [3.010002, 1.5100019999999998]}}, "C10": {"layer": "F", "center": [72.83449999999999, 105.53699999999999], "pads": [{"layers": ["F", "B"], "angle": -0.0, "pos": [77.83449999999999, 105.53699999999999], "drillsize": [1.0, 1.0], "shape": "circle", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [2.0, 2.0]}, {"layers": ["F", "B"], "angle": -0.0, "pos": [72.83449999999999, 105.53699999999999], "drillsize": [1.0, 1.0], "shape": "rect", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": true, "type": "th", "size": [2.0, 2.0]}], "drawings": [], "ref": "C10", "bbox": {"pos": [69.794853, 100.26199899999999], "size": [10.814648, 10.550002]}}, "L1": {"layer": "F", "center": [88.0017, 99.0727], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [89.8017, 99.0727], "shape": "rect", "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.5, 4.2]}, {"layers": ["F"], "angle": -180.0, "pos": [86.2017, 99.0727], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.5, 4.2]}], "drawings": [], "ref": "L1", "bbox": {"pos": [85.176699, 96.297699], "size": [5.650002, 5.550002]}}, "RS6": {"layer": "F", "center": [67.1703, 109.1267], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [67.1703, 112.02669999999999], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}, {"layers": ["F"], "angle": -90.0, "pos": [67.1703, 106.2267], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}], "drawings": [], "ref": "RS6", "bbox": {"pos": [65.22529899999999, 105.28169899999999], "size": [3.890002, 7.690002]}}, "RS4": {"layer": "F", "center": [59.0423, 109.1267], "pads": [{"layers": ["F"], "angle": -90.0, "pos": [59.0423, 112.02669999999999], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}, {"layers": ["F"], "angle": -90.0, "pos": [59.0423, 106.2267], "shape": "roundrect", "radius": 0.249999, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.3499999999999999, 3.3499999999999996]}], "drawings": [], "ref": "RS4", "bbox": {"pos": [57.097299, 105.28169899999999], "size": [3.890002, 7.690002]}}, "J4": {"layer": "F", "center": [78.74, 116.83999999999999], "pads": [{"layers": ["F", "B"], "angle": -90.0, "pos": [78.74, 116.83999999999999], "drillsize": [1.0, 1.0], "shape": "rect", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": true, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [81.28, 116.83999999999999], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [83.82, 116.83999999999999], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [86.36, 116.83999999999999], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [88.89999999999999, 116.83999999999999], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [91.44, 116.83999999999999], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [93.97999999999999, 116.83999999999999], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [96.52, 116.83999999999999], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [99.06, 116.83999999999999], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}], "drawings": [], "ref": "J4", "bbox": {"pos": [76.914999, 115.01499899999999], "size": [23.950001999999998, 3.6500019999999997]}}, "J5": {"layer": "F", "center": [76.962, 92.60839999999999], "pads": [{"layers": ["F", "B"], "angle": -90.0, "pos": [76.962, 92.60839999999999], "drillsize": [1.0, 1.0], "shape": "rect", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": true, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [79.502, 92.60839999999999], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}], "drawings": [], "ref": "J5", "bbox": {"pos": [75.136999, 90.783399], "size": [6.200002, 3.6500019999999997]}}, "J1": {"layer": "F", "center": [47.5925, 105.91799999999999], "pads": [{"layers": ["F", "B"], "angle": -0.0, "pos": [47.5925, 105.91799999999999], "drillsize": [1.0, 3.0], "shape": "rect", "offset": [0.0, 0.0], "drillshape": "oblong", "pin1": true, "type": "th", "size": [3.5, 3.5]}, {"layers": ["F", "B"], "angle": -0.0, "pos": [41.5925, 105.91799999999999], "drillsize": [1.0, 3.0], "shape": "roundrect", "radius": 0.75, "offset": [0.0, 0.0], "drillshape": "oblong", "pin1": false, "type": "th", "size": [3.0, 3.5]}, {"layers": ["F", "B"], "angle": -0.0, "pos": [44.5925, 110.618], "drillsize": [3.0, 1.0], "shape": "roundrect", "radius": 0.875, "offset": [0.0, 0.0], "drillshape": "oblong", "pin1": false, "type": "th", "size": [3.5, 3.5]}], "drawings": [], "ref": "J1", "bbox": {"pos": [33.567499, 101.057999], "size": [16.050002, 11.635002]}}, "J2": {"layer": "F", "center": [37.846, 97.26299999999999], "pads": [{"layers": ["F", "B"], "angle": -90.0, "pos": [37.846, 97.26299999999999], "drillsize": [1.3, 1.3], "shape": "rect", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": true, "type": "th", "size": [2.6, 2.6]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [37.846, 92.26299999999999], "drillsize": [1.3, 1.3], "shape": "circle", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [2.6, 2.6]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [37.846, 87.26299999999999], "drillsize": [1.3, 1.3], "shape": "circle", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [2.6, 2.6]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [37.846, 82.26299999999999], "drillsize": [1.3, 1.3], "shape": "circle", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [2.6, 2.6]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [37.846, 77.26299999999999], "drillsize": [1.3, 1.3], "shape": "circle", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [2.6, 2.6]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [37.846, 72.26299999999999], "drillsize": [1.3, 1.3], "shape": "circle", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [2.6, 2.6]}], "drawings": [], "ref": "J2", "bbox": {"pos": [33.320999, 69.237999], "size": [10.050002, 31.050002]}}, "J3": {"layer": "F", "center": [78.74, 63.119], "pads": [{"layers": ["F", "B"], "angle": -90.0, "pos": [78.74, 63.119], "drillsize": [1.0, 1.0], "shape": "rect", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": true, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [81.28, 63.119], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [83.82, 63.119], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [86.36, 63.119], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [88.89999999999999, 63.119], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}, {"layers": ["F", "B"], "angle": -90.0, "pos": [91.44, 63.119], "drillsize": [1.0, 1.0], "shape": "oval", "offset": [0.0, 0.0], "drillshape": "circle", "pin1": false, "type": "th", "size": [1.7, 1.7]}], "drawings": [], "ref": "J3", "bbox": {"pos": [76.914999, 61.293999], "size": [16.350002, 3.6500019999999997]}}, "SW1": {"layer": "F", "center": [102.64999999999999, 107.414], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [100.52499999999999, 105.664], "shape": "custom", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "polygons": [[[0.44999999999999996, 0.5499999999999999], [0.25, 0.5499999999999999], [0.25, 0.35], [-0.25, 0.35], [-0.25, -0.35], [0.25, -0.35], [0.25, -0.5499999999999999], [0.44999999999999996, -0.5499999999999999]]], "size": [0.5, 0.7]}, {"layers": ["F"], "angle": -180.0, "pos": [104.77499999999999, 105.664], "shape": "custom", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "polygons": [[[-0.25, -0.35], [0.25, -0.35], [0.25, 0.35], [-0.25, 0.35], [-0.25, 0.5499999999999999], [-0.44999999999999996, 0.5499999999999999], [-0.44999999999999996, -0.5499999999999999], [-0.25, -0.5499999999999999]]], "size": [0.5, 0.7]}, {"layers": ["F"], "angle": -180.0, "pos": [100.52499999999999, 109.164], "shape": "custom", "offset": [0.0, 0.0], "pin1": true, "type": "smd", "polygons": [[[0.44999999999999996, 0.5499999999999999], [0.25, 0.5499999999999999], [0.25, 0.35], [-0.25, 0.35], [-0.25, -0.35], [0.25, -0.35], [0.25, -0.5499999999999999], [0.44999999999999996, -0.5499999999999999]]], "size": [0.5, 0.7]}, {"layers": ["F"], "angle": -180.0, "pos": [104.77499999999999, 109.164], "shape": "custom", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "polygons": [[[-0.25, -0.35], [0.25, -0.35], [0.25, 0.35], [-0.25, 0.35], [-0.25, 0.5499999999999999], [-0.44999999999999996, 0.5499999999999999], [-0.44999999999999996, -0.5499999999999999], [-0.25, -0.5499999999999999]]], "size": [0.5, 0.7]}], "drawings": [], "ref": "SW1", "bbox": {"pos": [99.624999, 104.888999], "size": [6.050002, 5.050002]}}, "D4": {"layer": "F", "center": [104.0915, 101.854], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [105.029, 101.854], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -180.0, "pos": [103.154, 101.854], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "D4", "bbox": {"pos": [102.386499, 100.83399899999999], "size": [3.450002, 2.040002]}}, "D5": {"layer": "F", "center": [104.0915, 99.187], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [103.154, 99.187], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -180.0, "pos": [105.029, 99.187], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "D5", "bbox": {"pos": [102.386499, 98.16699899999999], "size": [3.450002, 2.040002]}}, "D2": {"layer": "F", "center": [48.768, 94.36], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [48.768, 92.71], "shape": "rect", "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.8999999999999999, 1.2]}, {"layers": ["F"], "angle": -270.0, "pos": [48.768, 96.00999999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.8999999999999999, 1.2]}], "drawings": [], "ref": "D2", "bbox": {"pos": [47.592999, 91.984999], "size": [2.350002, 4.750001999999999]}}, "D3": {"layer": "F", "center": [104.0615, 96.52], "pads": [{"layers": ["F"], "angle": -180.0, "pos": [104.999, 96.52], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.975, 1.4]}, {"layers": ["F"], "angle": -180.0, "pos": [103.124, 96.52], "shape": "roundrect", "radius": 0.24375, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.975, 1.4]}], "drawings": [], "ref": "D3", "bbox": {"pos": [102.356499, 95.499999], "size": [3.450002, 2.040002]}}, "D0": {"layer": "F", "center": [55.5625, 110.214], "pads": [{"layers": ["F"], "angle": -270.0, "pos": [55.5625, 112.014], "shape": "roundrect", "radius": 0.27499999999999997, "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [1.0999999999999999, 1.65]}, {"layers": ["F"], "angle": -270.0, "pos": [55.5625, 108.414], "shape": "roundrect", "radius": 0.27499999999999997, "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [1.0999999999999999, 1.65]}], "drawings": [], "ref": "D0", "bbox": {"pos": [54.512499, 107.66399899999999], "size": [2.100002, 5.075002]}}, "D1": {"layer": "F", "center": [52.451, 86.106], "pads": [{"layers": ["F"], "angle": -0.0, "pos": [51.451, 85.15599999999999], "shape": "rect", "offset": [0.0, 0.0], "pin1": true, "type": "smd", "size": [0.8999999999999999, 0.7999999999999999]}, {"layers": ["F"], "angle": -0.0, "pos": [51.451, 87.056], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.8999999999999999, 0.7999999999999999]}, {"layers": ["F"], "angle": -0.0, "pos": [53.451, 86.106], "shape": "rect", "offset": [0.0, 0.0], "pin1": false, "type": "smd", "size": [0.8999999999999999, 0.7999999999999999]}], "drawings": [], "ref": "D1", "bbox": {"pos": [50.725998999999995, 84.33099899999999], "size": [3.450002, 3.5500019999999997]}}}, "edges": [{"start": [111.37899999999999, 116.713], "end": [109.47399999999999, 118.618], "type": "segment", "width": 0.15}, {"start": [111.37899999999999, 63.245999999999995], "end": [109.47399999999999, 61.340999999999994], "type": "segment", "width": 0.15}, {"start": [33.782, 63.245999999999995], "end": [35.687, 61.340999999999994], "type": "segment", "width": 0.15}, {"start": [33.782, 116.713], "end": [35.687, 118.618], "type": "segment", "width": 0.15}, {"start": [35.687, 118.618], "end": [109.47399999999999, 118.618], "type": "segment", "width": 0.15}, {"start": [111.37899999999999, 63.245999999999995], "end": [111.37899999999999, 116.713], "type": "segment", "width": 0.15}, {"start": [35.687, 61.340999999999994], "end": [109.47399999999999, 61.340999999999994], "type": "segment", "width": 0.15}, {"start": [33.782, 116.713], "end": [33.782, 63.245999999999995], "type": "segment", "width": 0.15}], "bom": {"both": [[2, "68uF 100V", "CP_Radial_D10.0mm_P5.00mm", ["C10", "C11"]], [7, "0.1uF", "C_0603_1608Metric", ["C5", "C12", "C14", "C16", "C17", "C21", "C22"]], [1, "1uF", "C_0603_1608Metric", ["C19"]], [4, "220nF 100V", "C_0805_2012Metric", ["C6", "C7", "C8", "C9"]], [2, "470nF 100V", "C_0805_2012Metric", ["C2", "C3"]], [2, "10uF", "C_0805_2012Metric", ["C15", "C20"]], [1, "220nF", "C_0805_2012Metric", ["C4"]], [1, "47nF 100V", "C_0805_2012Metric", ["C13"]], [1, "22uF", "C_1206_3216Metric", ["C1"]], [1, "1uF 100V", "C_1206_3216Metric", ["C18"]], [3, "330", "R_0603_1608Metric", ["R9", "R10", "R11"]], [2, "39K", "R_0603_1608Metric", ["R7", "R8"]], [2, "10K", "R_0603_1608Metric", ["R12", "R13"]], [2, "4.7K", "R_0603_1608Metric", ["R14", "R15"]], [1, "47K", "R_0603_1608Metric", ["R1"]], [1, "1.8K", "R_0603_1608Metric", ["R2"]], [1, "00", "R_0805_2012Metric_Pad1.15x1.40mm_HandSolder", ["R0"]], [1, "33uH", "L_Taiyo-Yuden_NR-50xx", ["L1"]], [1, "LED GRN", "D_0805_2012Metric", ["D3"]], [1, "LED YEL", "D_0805_2012Metric", ["D4"]], [1, "LED RED", "D_0805_2012Metric", ["D5"]], [1, "D_Schottky", "D_SOD-123", ["D2"]], [1, "RPOL", "D_SOD80", ["D0"]], [1, "D_Schottky_x2_Serial_AKC", "SOT-23", ["D1"]], [1, "MAX15062A", "DFN-8_2x2mm_P0.5mm", ["U3"]], [1, "ESP-WROOM-02", "ESP-WROOM-02", ["U1"]], [1, "ATECC508A", "SOIC-8_3.9x4.9mm_P1.27mm", ["U4"]], [1, "powerSTEP01", "powerSTEP01", ["U2"]], [1, "SW_SPST", "TL3315NF100Q", ["SW1"]], [6, "0.06", "R_2512_6332Metric", ["RS1", "RS2", "RS3", "RS4", "RS5", "RS6"]], [2, "Jumper_2_Open", "STpowerSTEP01_JMP", ["JP1", "JP2"]], [1, "Barrel_Jack_Switch", "BarrelJack_Horizontal", ["J1"]], [1, "Conn_01x02", "PinHeader_1x02_P2.54mm_Vertical", ["J5"]], [1, "Conn_01x06", "PinHeader_1x06_P2.54mm_Vertical", ["J3"]], [1, "Conn_01x09", "PinHeader_1x09_P2.54mm_Vertical", ["J4"]], [1, "Screw_Terminal", "TerminalBlock_Phoenix_PT-1,5-6-5.0-H_1x06_P5.00mm_Horizontal", ["J2"]]], "B": [[2, "Jumper_2_Open", "STpowerSTEP01_JMP", ["JP1", "JP2"]]], "F": [[2, "68uF 100V", "CP_Radial_D10.0mm_P5.00mm", ["C10", "C11"]], [7, "0.1uF", "C_0603_1608Metric", ["C5", "C12", "C14", "C16", "C17", "C21", "C22"]], [1, "1uF", "C_0603_1608Metric", ["C19"]], [4, "220nF 100V", "C_0805_2012Metric", ["C6", "C7", "C8", "C9"]], [2, "470nF 100V", "C_0805_2012Metric", ["C2", "C3"]], [2, "10uF", "C_0805_2012Metric", ["C15", "C20"]], [1, "220nF", "C_0805_2012Metric", ["C4"]], [1, "47nF 100V", "C_0805_2012Metric", ["C13"]], [1, "22uF", "C_1206_3216Metric", ["C1"]], [1, "1uF 100V", "C_1206_3216Metric", ["C18"]], [3, "330", "R_0603_1608Metric", ["R9", "R10", "R11"]], [2, "39K", "R_0603_1608Metric", ["R7", "R8"]], [2, "10K", "R_0603_1608Metric", ["R12", "R13"]], [2, "4.7K", "R_0603_1608Metric", ["R14", "R15"]], [1, "47K", "R_0603_1608Metric", ["R1"]], [1, "1.8K", "R_0603_1608Metric", ["R2"]], [1, "00", "R_0805_2012Metric_Pad1.15x1.40mm_HandSolder", ["R0"]], [1, "33uH", "L_Taiyo-Yuden_NR-50xx", ["L1"]], [1, "LED GRN", "D_0805_2012Metric", ["D3"]], [1, "LED YEL", "D_0805_2012Metric", ["D4"]], [1, "LED RED", "D_0805_2012Metric", ["D5"]], [1, "D_Schottky", "D_SOD-123", ["D2"]], [1, "RPOL", "D_SOD80", ["D0"]], [1, "D_Schottky_x2_Serial_AKC", "SOT-23", ["D1"]], [1, "MAX15062A", "DFN-8_2x2mm_P0.5mm", ["U3"]], [1, "ESP-WROOM-02", "ESP-WROOM-02", ["U1"]], [1, "ATECC508A", "SOIC-8_3.9x4.9mm_P1.27mm", ["U4"]], [1, "powerSTEP01", "powerSTEP01", ["U2"]], [1, "SW_SPST", "TL3315NF100Q", ["SW1"]], [6, "0.06", "R_2512_6332Metric", ["RS1", "RS2", "RS3", "RS4", "RS5", "RS6"]], [1, "Barrel_Jack_Switch", "BarrelJack_Horizontal", ["J1"]], [1, "Conn_01x02", "PinHeader_1x02_P2.54mm_Vertical", ["J5"]], [1, "Conn_01x06", "PinHeader_1x06_P2.54mm_Vertical", ["J3"]], [1, "Conn_01x09", "PinHeader_1x09_P2.54mm_Vertical", ["J4"]], [1, "Screw_Terminal", "TerminalBlock_Phoenix_PT-1,5-6-5.0-H_1x06_P5.00mm_Horizontal", ["J2"]]]}, "silkscreen": {"B": [{"angle": 0.0, "horiz_justify": 0, "text": "Short for Voltage Mode", "pos": [63.245999999999995, 113.28399999999999], "height": 0.7999999999999999, "width": 0.7999999999999999}, {"angle": 0.0, "horiz_justify": 0, "text": "Short for Voltage Mode", "pos": [63.245999999999995, 66.294], "height": 0.7999999999999999, "width": 0.7999999999999999}, {"start": [71.628, 112.52199999999999], "end": [54.61, 112.52199999999999], "type": "segment", "width": 0.19999999999999998}, {"start": [54.61, 109.22], "end": [71.628, 109.22], "type": "segment", "width": 0.19999999999999998}, {"start": [71.628, 109.22], "end": [71.628, 112.52199999999999], "type": "segment", "width": 0.19999999999999998}, {"start": [54.61, 112.52199999999999], "end": [54.61, 109.22], "type": "segment", "width": 0.19999999999999998}, {"start": [54.864, 70.35799999999999], "end": [54.864, 67.056], "type": "segment", "width": 0.19999999999999998}, {"start": [71.88199999999999, 70.35799999999999], "end": [54.864, 70.35799999999999], "type": "segment", "width": 0.19999999999999998}, {"start": [71.88199999999999, 67.056], "end": [71.88199999999999, 70.35799999999999], "type": "segment", "width": 0.19999999999999998}, {"start": [54.864, 67.056], "end": [71.88199999999999, 67.056], "type": "segment", "width": 0.19999999999999998}], "F": [{"angle": 90.0, "horiz_justify": 0, "text": "GND", "pos": [82.0928, 92.71], "height": 1.0, "width": 1.0}, {"angle": 90.0, "horiz_justify": 0, "text": "VIN", "pos": [74.62519999999999, 92.6592], "height": 1.0, "width": 1.0}, {"start": [49.275999999999996, 76.962], "end": [48.513999999999996, 76.962], "type": "segment", "width": 0.19999999999999998}, {"start": [49.275999999999996, 72.07249999999999], "end": [49.275999999999996, 76.962], "type": "segment", "width": 0.19999999999999998}, {"start": [48.513999999999996, 72.07249999999999], "end": [49.275999999999996, 72.07249999999999], "type": "segment", "width": 0.19999999999999998}, {"angle": 0.0, "horiz_justify": -1, "text": "WSX100 RevB", "pos": [44.449999999999996, 67.056], "height": 1.0, "width": 1.0}, {"angle": 0.0, "horiz_justify": 0, "text": "85V\nMAX", "pos": [52.006499999999996, 74.4855], "height": 1.5, "width": 1.5}, {"angle": 90.0, "horiz_justify": 0, "text": "50V\nMAX", "pos": [52.832, 103.886], "height": 1.5, "width": 1.5}, {"angle": 90.0, "horiz_justify": 0, "text": "RESET", "pos": [107.06099999999999, 107.442], "height": 1.5, "width": 1.5}, {"start": [81.788, 101.473], "end": [81.788, 97.40899999999999], "type": "segment", "width": 0.19999999999999998}, {"start": [84.328, 101.473], "end": [81.788, 101.473], "type": "segment", "width": 0.19999999999999998}, {"start": [84.328, 97.40899999999999], "end": [84.328, 101.473], "type": "segment", "width": 0.19999999999999998}, {"start": [81.788, 97.40899999999999], "end": [84.328, 97.40899999999999], "type": "segment", "width": 0.19999999999999998}, {"angle": 0.0, "horiz_justify": 0, "text": "Good Robotics (2018)", "pos": [57.912, 115.951], "height": 1.5, "width": 1.5}, {"angle": 0.0, "horiz_justify": 1, "text": "POWER", "pos": [102.10799999999999, 96.52], "height": 1.5, "width": 1.5}, {"angle": 0.0, "horiz_justify": 1, "text": "WIFI", "pos": [102.0445, 101.854], "height": 1.5, "width": 1.5}, {"angle": 0.0, "horiz_justify": 1, "text": "FLAG", "pos": [102.0445, 99.187], "height": 1.5, "width": 1.5}, {"angle": 0.0, "horiz_justify": -1, "text": "WiFi Stepper", "pos": [42.291, 64.262], "height": 2.0, "width": 2.0}, {"angle": 0.0, "horiz_justify": -1, "text": "GND\n\nVIN\n\nA-\n\nA+\n\nB+\n\nB-", "pos": [43.434, 84.709], "height": 1.5, "width": 1.5}, {"angle": 90.0, "horiz_justify": 1, "text": "3V3\nGND\nSW\nSTEP\nFLAG\nBUSY", "pos": [85.0265, 64.643], "height": 1.5499999999999998, "width": 1.5}, {"angle": 90.0, "horiz_justify": -1, "text": "3V3\nGND\nSCK\nSDA\nRST\nADC\nBOOT\nRX\nTX", "pos": [89.027, 115.2525], "height": 1.5499999999999998, "width": 1.5}, {"angle": 0.0, "horiz_justify": 0, "text": "D0", "pos": [55.5625, 113.49749999999999], "height": 1.0, "width": 1.0}, {"start": [54.5625, 107.714], "end": [54.5625, 111.714], "type": "segment", "width": 0.09999999999999999}, {"start": [56.5625, 107.714], "end": [54.5625, 107.714], "type": "segment", "width": 0.09999999999999999}, {"start": [56.5625, 111.714], "end": [56.5625, 107.714], "type": "segment", "width": 0.09999999999999999}, {"angle": 0.0, "horiz_justify": 0, "text": "U2", "pos": [63.245999999999995, 81.407], "height": 1.0, "width": 1.0}, {"start": [69.246, 97.289], "radius": 0.25, "type": "circle", "width": 0.09999999999999999}, {"start": [68.746, 82.789], "end": [68.746, 96.789], "type": "segment", "width": 0.049999999999999996}, {"start": [57.745999999999995, 82.789], "end": [68.746, 82.789], "type": "segment", "width": 0.049999999999999996}, {"start": [57.745999999999995, 96.789], "end": [57.745999999999995, 82.789], "type": "segment", "width": 0.049999999999999996}, {"start": [68.746, 96.789], "end": [57.745999999999995, 96.789], "type": "segment", "width": 0.049999999999999996}, {"angle": 90.0, "horiz_justify": 0, "text": "R10", "pos": [108.14049999999999, 93.9165], "height": 1.0, "width": 1.0}, {"start": [107.1265, 94.04127899999999], "end": [107.1265, 93.715721], "type": "segment", "width": 0.12}, {"start": [106.1065, 94.04127899999999], "end": [106.1065, 93.715721], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C1", "pos": [55.117999999999995, 98.55199999999999], "height": 1.0, "width": 1.0}, {"start": [52.288064, 99.46199999999999], "end": [51.083935999999994, 99.46199999999999], "type": "segment", "width": 0.12}, {"start": [52.288064, 97.642], "end": [51.083935999999994, 97.642], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "C2", "pos": [54.546499999999995, 91.313], "height": 1.0, "width": 1.0}, {"start": [53.541999999999994, 91.10292199999999], "end": [53.541999999999994, 91.62007799999999], "type": "segment", "width": 0.12}, {"start": [52.122, 91.10292199999999], "end": [52.122, 91.62007799999999], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "C3", "pos": [47.879, 86.106], "height": 1.0, "width": 1.0}, {"start": [48.82, 86.31607799999999], "end": [48.82, 85.79892199999999], "type": "segment", "width": 0.12}, {"start": [50.239999999999995, 86.31607799999999], "end": [50.239999999999995, 85.79892199999999], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C4", "pos": [54.864, 96.012], "height": 1.0, "width": 1.0}, {"start": [52.407078, 96.722], "end": [51.889922, 96.722], "type": "segment", "width": 0.12}, {"start": [52.407078, 95.30199999999999], "end": [51.889922, 95.30199999999999], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "C5", "pos": [49.275999999999996, 80.00999999999999], "height": 1.0, "width": 1.0}, {"start": [49.785999999999994, 82.73827899999999], "end": [49.785999999999994, 82.41272099999999], "type": "segment", "width": 0.12}, {"start": [48.766, 82.73827899999999], "end": [48.766, 82.41272099999999], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C6", "pos": [75.2856, 97.48519999999999], "height": 1.0, "width": 1.0}, {"start": [74.988922, 94.9845], "end": [75.506078, 94.9845], "type": "segment", "width": 0.12}, {"start": [74.988922, 96.4045], "end": [75.506078, 96.4045], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C7", "pos": [75.438, 82.169], "height": 1.0, "width": 1.0}, {"start": [75.22792199999999, 84.53], "end": [75.74507799999999, 84.53], "type": "segment", "width": 0.12}, {"start": [75.22792199999999, 83.11], "end": [75.74507799999999, 83.11], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "C8", "pos": [55.8165, 71.344], "height": 1.0, "width": 1.0}, {"start": [55.1065, 74.348078], "end": [55.1065, 73.830922], "type": "segment", "width": 0.12}, {"start": [56.5265, 74.348078], "end": [56.5265, 73.830922], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "C9", "pos": [50.8, 110.6805], "height": 1.0, "width": 1.0}, {"start": [51.677499999999995, 110.470422], "end": [51.677499999999995, 110.987578], "type": "segment", "width": 0.12}, {"start": [53.0975, 110.470422], "end": [53.0975, 110.987578], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C12", "pos": [55.372, 93.97999999999999], "height": 1.0, "width": 1.0}, {"start": [52.461279, 94.49], "end": [52.135721, 94.49], "type": "segment", "width": 0.12}, {"start": [52.461279, 93.47], "end": [52.135721, 93.47], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "C13", "pos": [51.244499999999995, 89.85249999999999], "height": 1.0, "width": 1.0}, {"start": [50.239999999999995, 90.12607799999999], "end": [50.239999999999995, 89.60892199999999], "type": "segment", "width": 0.12}, {"start": [48.82, 90.12607799999999], "end": [48.82, 89.60892199999999], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "C14", "pos": [78.5876, 83.312], "height": 1.0, "width": 1.0}, {"start": [79.627, 83.50027899999999], "end": [79.627, 83.17472099999999], "type": "segment", "width": 0.12}, {"start": [80.64699999999999, 83.50027899999999], "end": [80.64699999999999, 83.17472099999999], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C15", "pos": [100.58399999999999, 68.8975], "height": 1.0, "width": 1.0}, {"start": [101.675, 66.758078], "end": [101.675, 66.240922], "type": "segment", "width": 0.12}, {"start": [100.255, 66.758078], "end": [100.255, 66.240922], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C16", "pos": [103.6955, 68.8975], "height": 1.0, "width": 1.0}, {"start": [102.487, 66.812279], "end": [102.487, 66.486721], "type": "segment", "width": 0.12}, {"start": [103.50699999999999, 66.812279], "end": [103.50699999999999, 66.486721], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C17", "pos": [96.774, 68.8975], "height": 1.0, "width": 1.0}, {"start": [95.62899999999999, 66.837779], "end": [95.62899999999999, 66.512221], "type": "segment", "width": 0.12}, {"start": [96.649, 66.837779], "end": [96.649, 66.512221], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C18", "pos": [79.2988, 100.3808], "height": 1.0, "width": 1.0}, {"start": [80.22149999999999, 97.63306399999999], "end": [80.22149999999999, 96.428936], "type": "segment", "width": 0.12}, {"start": [78.4015, 97.63306399999999], "end": [78.4015, 96.428936], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C19", "pos": [81.788, 103.5685], "height": 1.0, "width": 1.0}, {"start": [81.405, 105.65372099999999], "end": [81.405, 105.97927899999999], "type": "segment", "width": 0.12}, {"start": [82.425, 105.65372099999999], "end": [82.425, 105.97927899999999], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C20", "pos": [88.8365, 104.521], "height": 1.0, "width": 1.0}, {"start": [89.110078, 102.16], "end": [88.592922, 102.16], "type": "segment", "width": 0.12}, {"start": [89.110078, 103.58], "end": [88.592922, 103.58], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "C21", "pos": [93.2815, 99.68249999999999], "height": 1.0, "width": 1.0}, {"start": [91.31099999999999, 99.494221], "end": [91.31099999999999, 99.819779], "type": "segment", "width": 0.12}, {"start": [92.33099999999999, 99.494221], "end": [92.33099999999999, 99.819779], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "D1", "pos": [52.705, 88.51899999999999], "height": 1.0, "width": 1.0}, {"start": [53.211, 87.68599999999999], "end": [53.211, 86.756], "type": "segment", "width": 0.12}, {"start": [53.211, 84.526], "end": [53.211, 85.456], "type": "segment", "width": 0.12}, {"start": [53.211, 84.526], "end": [51.050999999999995, 84.526], "type": "segment", "width": 0.12}, {"start": [53.211, 87.68599999999999], "end": [51.751, 87.68599999999999], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "D2", "pos": [48.768, 94.4245], "height": 1.0, "width": 1.0}, {"start": [49.768, 92.11], "end": [47.768, 92.11], "type": "segment", "width": 0.12}, {"start": [47.768, 92.11], "end": [47.768, 96.00999999999999], "type": "segment", "width": 0.12}, {"start": [49.768, 92.11], "end": [49.768, 96.00999999999999], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "D3", "pos": [106.553, 96.45649999999999], "height": 1.0, "width": 1.0}, {"start": [103.0615, 97.47999999999999], "end": [105.7465, 97.47999999999999], "type": "segment", "width": 0.12}, {"start": [105.7465, 97.47999999999999], "end": [105.7465, 95.56], "type": "segment", "width": 0.12}, {"start": [105.7465, 95.56], "end": [103.0615, 95.56], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "D4", "pos": [106.583, 101.7905], "height": 1.0, "width": 1.0}, {"start": [103.0915, 102.814], "end": [105.7765, 102.814], "type": "segment", "width": 0.12}, {"start": [105.7765, 102.814], "end": [105.7765, 100.89399999999999], "type": "segment", "width": 0.12}, {"start": [105.7765, 100.89399999999999], "end": [103.0915, 100.89399999999999], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "D5", "pos": [106.583, 99.12349999999999], "height": 1.0, "width": 1.0}, {"start": [105.7765, 98.22699999999999], "end": [103.0915, 98.22699999999999], "type": "segment", "width": 0.12}, {"start": [105.7765, 100.14699999999999], "end": [105.7765, 98.22699999999999], "type": "segment", "width": 0.12}, {"start": [103.0915, 100.14699999999999], "end": [105.7765, 100.14699999999999], "type": "segment", "width": 0.12}, {"start": [48.692499999999995, 102.16799999999999], "end": [48.692499999999995, 101.118], "type": "segment", "width": 0.12}, {"start": [47.6425, 101.118], "end": [48.692499999999995, 101.118], "type": "segment", "width": 0.12}, {"start": [42.5925, 110.518], "end": [33.7925, 110.518], "type": "segment", "width": 0.12}, {"start": [33.7925, 110.518], "end": [33.7925, 101.318], "type": "segment", "width": 0.12}, {"start": [48.4925, 107.818], "end": [48.4925, 110.518], "type": "segment", "width": 0.12}, {"start": [48.4925, 110.518], "end": [46.5925, 110.518], "type": "segment", "width": 0.12}, {"start": [33.7925, 101.318], "end": [48.4925, 101.318], "type": "segment", "width": 0.12}, {"start": [48.4925, 101.318], "end": [48.4925, 103.91799999999999], "type": "segment", "width": 0.12}, {"start": [92.77, 64.449], "end": [92.77, 61.788999999999994], "type": "segment", "width": 0.12}, {"start": [80.00999999999999, 64.449], "end": [92.77, 64.449], "type": "segment", "width": 0.12}, {"start": [80.00999999999999, 61.788999999999994], "end": [92.77, 61.788999999999994], "type": "segment", "width": 0.12}, {"start": [80.00999999999999, 64.449], "end": [80.00999999999999, 61.788999999999994], "type": "segment", "width": 0.12}, {"start": [78.74, 64.449], "end": [77.41, 64.449], "type": "segment", "width": 0.12}, {"start": [77.41, 64.449], "end": [77.41, 63.119], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "L1", "pos": [87.9357, 95.7199], "height": 1.0, "width": 1.0}, {"start": [90.5517, 101.6227], "end": [85.4517, 101.6227], "type": "segment", "width": 0.12}, {"start": [90.5517, 96.5227], "end": [85.4517, 96.5227], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "R1", "pos": [52.832, 80.00999999999999], "height": 1.0, "width": 1.0}, {"start": [53.342, 82.41272099999999], "end": [53.342, 82.73827899999999], "type": "segment", "width": 0.12}, {"start": [52.321999999999996, 82.41272099999999], "end": [52.321999999999996, 82.73827899999999], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "R2", "pos": [51.053999999999995, 80.00999999999999], "height": 1.0, "width": 1.0}, {"start": [50.544, 82.73827899999999], "end": [50.544, 82.41272099999999], "type": "segment", "width": 0.12}, {"start": [51.564, 82.73827899999999], "end": [51.564, 82.41272099999999], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "R7", "pos": [97.663, 63.754], "height": 1.0, "width": 1.0}, {"start": [95.336479, 64.2132], "end": [95.010921, 64.2132], "type": "segment", "width": 0.12}, {"start": [95.336479, 63.1932], "end": [95.010921, 63.1932], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "R8", "pos": [84.89949999999999, 90.729], "height": 1.0, "width": 1.0}, {"start": [85.4095, 93.406279], "end": [85.4095, 93.080721], "type": "segment", "width": 0.12}, {"start": [84.3895, 93.406279], "end": [84.3895, 93.080721], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "R9", "pos": [87.42699999999999, 90.99549999999999], "height": 1.0, "width": 1.0}, {"start": [87.564279, 91.946], "end": [87.238721, 91.946], "type": "segment", "width": 0.12}, {"start": [87.564279, 92.966], "end": [87.238721, 92.966], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "R11", "pos": [104.20349999999999, 93.1545], "height": 1.0, "width": 1.0}, {"start": [104.340779, 95.125], "end": [104.015221, 95.125], "type": "segment", "width": 0.12}, {"start": [104.340779, 94.10499999999999], "end": [104.015221, 94.10499999999999], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "R12", "pos": [93.726, 68.8975], "height": 1.0, "width": 1.0}, {"start": [93.91449999999999, 66.86327899999999], "end": [93.91449999999999, 66.53772099999999], "type": "segment", "width": 0.12}, {"start": [94.9345, 66.86327899999999], "end": [94.9345, 66.53772099999999], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "R13", "pos": [99.314, 66.675], "height": 1.0, "width": 1.0}, {"start": [98.42699999999999, 66.86327899999999], "end": [98.42699999999999, 66.53772099999999], "type": "segment", "width": 0.12}, {"start": [97.407, 66.86327899999999], "end": [97.407, 66.53772099999999], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "R14", "pos": [84.709, 107.6325], "height": 1.0, "width": 1.0}, {"start": [87.568721, 108.1425], "end": [87.894279, 108.1425], "type": "segment", "width": 0.12}, {"start": [87.568721, 107.12249999999999], "end": [87.894279, 107.12249999999999], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "R15", "pos": [82.86749999999999, 109.47399999999999], "height": 1.0, "width": 1.0}, {"start": [85.727221, 108.964], "end": [86.052779, 108.964], "type": "segment", "width": 0.12}, {"start": [85.727221, 109.984], "end": [86.052779, 109.984], "type": "segment", "width": 0.12}, {"angle": 90.0, "horiz_justify": 0, "text": "U1", "pos": [90.398, 80.69149999999999], "height": 1.0, "width": 1.0}, {"start": [91.398, 71.69149999999999], "end": [105.398, 71.69149999999999], "type": "segment", "width": 0.15}, {"start": [105.398, 71.69149999999999], "end": [105.398, 89.69149999999999], "type": "segment", "width": 0.15}, {"start": [105.398, 89.69149999999999], "end": [91.398, 89.69149999999999], "type": "segment", "width": 0.15}, {"start": [91.398, 89.69149999999999], "end": [91.398, 71.69149999999999], "type": "segment", "width": 0.15}, {"angle": 0.0, "horiz_justify": 0, "text": "U3", "pos": [84.902, 102.704], "height": 1.0, "width": 1.0}, {"start": [84.252, 105.929], "end": [85.55199999999999, 105.929], "type": "segment", "width": 0.12}, {"start": [83.652, 103.62899999999999], "end": [85.55199999999999, 103.62899999999999], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "U4", "pos": [93.78949999999999, 105.72749999999999], "height": 1.0, "width": 1.0}, {"start": [91.151, 107.645], "end": [91.201, 107.645], "type": "segment", "width": 0.15}, {"start": [91.151, 103.49499999999999], "end": [91.29599999999999, 103.49499999999999], "type": "segment", "width": 0.15}, {"start": [96.301, 103.49499999999999], "end": [96.15599999999999, 103.49499999999999], "type": "segment", "width": 0.15}, {"start": [96.301, 107.645], "end": [96.15599999999999, 107.645], "type": "segment", "width": 0.15}, {"start": [91.151, 107.645], "end": [91.151, 103.49499999999999], "type": "segment", "width": 0.15}, {"start": [96.301, 107.645], "end": [96.301, 103.49499999999999], "type": "segment", "width": 0.15}, {"start": [91.201, 107.645], "end": [91.201, 109.045], "type": "segment", "width": 0.15}, {"angle": 0.0, "horiz_justify": 0, "text": "R0", "pos": [83.05799999999999, 96.45649999999999], "height": 1.0, "width": 1.0}, {"start": [82.348, 99.693252], "end": [82.348, 99.17074799999999], "type": "segment", "width": 0.12}, {"start": [83.768, 99.693252], "end": [83.768, 99.17074799999999], "type": "segment", "width": 0.12}, {"start": [70.354854, 102.16199999999999], "end": [70.354854, 103.16199999999999], "type": "segment", "width": 0.12}, {"start": [69.854854, 102.66199999999999], "end": [70.854854, 102.66199999999999], "type": "segment", "width": 0.12}, {"start": [80.4155, 104.93799999999999], "end": [80.4155, 106.136], "type": "segment", "width": 0.12}, {"start": [80.3755, 104.675], "end": [80.3755, 106.399], "type": "segment", "width": 0.12}, {"start": [80.3355, 104.475], "end": [80.3355, 106.59899999999999], "type": "segment", "width": 0.12}, {"start": [80.29549999999999, 104.307], "end": [80.29549999999999, 106.767], "type": "segment", "width": 0.12}, {"start": [80.2555, 104.15899999999999], "end": [80.2555, 106.91499999999999], "type": "segment", "width": 0.12}, {"start": [80.21549999999999, 104.027], "end": [80.21549999999999, 107.047], "type": "segment", "width": 0.12}, {"start": [80.1755, 103.907], "end": [80.1755, 107.167], "type": "segment", "width": 0.12}, {"start": [80.1355, 103.795], "end": [80.1355, 107.279], "type": "segment", "width": 0.12}, {"start": [80.0955, 103.69099999999999], "end": [80.0955, 107.383], "type": "segment", "width": 0.12}, {"start": [80.0555, 103.59299999999999], "end": [80.0555, 107.481], "type": "segment", "width": 0.12}, {"start": [80.0155, 103.5], "end": [80.0155, 107.574], "type": "segment", "width": 0.12}, {"start": [79.9755, 103.41199999999999], "end": [79.9755, 107.66199999999999], "type": "segment", "width": 0.12}, {"start": [79.93549999999999, 103.32799999999999], "end": [79.93549999999999, 107.746], "type": "segment", "width": 0.12}, {"start": [79.8955, 103.24799999999999], "end": [79.8955, 107.826], "type": "segment", "width": 0.12}, {"start": [79.85549999999999, 103.172], "end": [79.85549999999999, 107.902], "type": "segment", "width": 0.12}, {"start": [79.8155, 103.098], "end": [79.8155, 107.976], "type": "segment", "width": 0.12}, {"start": [79.7755, 103.027], "end": [79.7755, 108.047], "type": "segment", "width": 0.12}, {"start": [79.7355, 102.958], "end": [79.7355, 108.116], "type": "segment", "width": 0.12}, {"start": [79.6955, 102.892], "end": [79.6955, 108.182], "type": "segment", "width": 0.12}, {"start": [79.65549999999999, 102.82799999999999], "end": [79.65549999999999, 108.246], "type": "segment", "width": 0.12}, {"start": [79.6155, 102.767], "end": [79.6155, 108.307], "type": "segment", "width": 0.12}, {"start": [79.57549999999999, 102.707], "end": [79.57549999999999, 108.36699999999999], "type": "segment", "width": 0.12}, {"start": [79.5355, 102.648], "end": [79.5355, 108.426], "type": "segment", "width": 0.12}, {"start": [79.49549999999999, 102.592], "end": [79.49549999999999, 108.482], "type": "segment", "width": 0.12}, {"start": [79.4555, 102.53699999999999], "end": [79.4555, 108.53699999999999], "type": "segment", "width": 0.12}, {"start": [79.4155, 102.48299999999999], "end": [79.4155, 108.591], "type": "segment", "width": 0.12}, {"start": [79.3755, 102.431], "end": [79.3755, 108.643], "type": "segment", "width": 0.12}, {"start": [79.3355, 102.381], "end": [79.3355, 108.693], "type": "segment", "width": 0.12}, {"start": [79.29549999999999, 102.33099999999999], "end": [79.29549999999999, 108.743], "type": "segment", "width": 0.12}, {"start": [79.2555, 102.283], "end": [79.2555, 108.791], "type": "segment", "width": 0.12}, {"start": [79.21549999999999, 102.23599999999999], "end": [79.21549999999999, 108.838], "type": "segment", "width": 0.12}, {"start": [79.1755, 102.19], "end": [79.1755, 108.884], "type": "segment", "width": 0.12}, {"start": [79.1355, 102.145], "end": [79.1355, 108.929], "type": "segment", "width": 0.12}, {"start": [79.0955, 102.101], "end": [79.0955, 108.973], "type": "segment", "width": 0.12}, {"start": [79.0555, 106.77799999999999], "end": [79.0555, 109.015], "type": "segment", "width": 0.12}, {"start": [79.0555, 102.059], "end": [79.0555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [79.0155, 106.77799999999999], "end": [79.0155, 109.057], "type": "segment", "width": 0.12}, {"start": [79.0155, 102.017], "end": [79.0155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.9755, 106.77799999999999], "end": [78.9755, 109.098], "type": "segment", "width": 0.12}, {"start": [78.9755, 101.976], "end": [78.9755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.93549999999999, 106.77799999999999], "end": [78.93549999999999, 109.13799999999999], "type": "segment", "width": 0.12}, {"start": [78.93549999999999, 101.93599999999999], "end": [78.93549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.8955, 106.77799999999999], "end": [78.8955, 109.17699999999999], "type": "segment", "width": 0.12}, {"start": [78.8955, 101.89699999999999], "end": [78.8955, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.85549999999999, 106.77799999999999], "end": [78.85549999999999, 109.216], "type": "segment", "width": 0.12}, {"start": [78.85549999999999, 101.85799999999999], "end": [78.85549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.8155, 106.77799999999999], "end": [78.8155, 109.253], "type": "segment", "width": 0.12}, {"start": [78.8155, 101.821], "end": [78.8155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.7755, 106.77799999999999], "end": [78.7755, 109.28999999999999], "type": "segment", "width": 0.12}, {"start": [78.7755, 101.78399999999999], "end": [78.7755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.7355, 106.77799999999999], "end": [78.7355, 109.326], "type": "segment", "width": 0.12}, {"start": [78.7355, 101.74799999999999], "end": [78.7355, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.6955, 106.77799999999999], "end": [78.6955, 109.36099999999999], "type": "segment", "width": 0.12}, {"start": [78.6955, 101.713], "end": [78.6955, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.6555, 106.77799999999999], "end": [78.6555, 109.395], "type": "segment", "width": 0.12}, {"start": [78.6555, 101.679], "end": [78.6555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.6155, 106.77799999999999], "end": [78.6155, 109.429], "type": "segment", "width": 0.12}, {"start": [78.6155, 101.645], "end": [78.6155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.57549999999999, 106.77799999999999], "end": [78.57549999999999, 109.46199999999999], "type": "segment", "width": 0.12}, {"start": [78.57549999999999, 101.612], "end": [78.57549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.5355, 106.77799999999999], "end": [78.5355, 109.494], "type": "segment", "width": 0.12}, {"start": [78.5355, 101.58], "end": [78.5355, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.49549999999999, 106.77799999999999], "end": [78.49549999999999, 109.526], "type": "segment", "width": 0.12}, {"start": [78.49549999999999, 101.548], "end": [78.49549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.4555, 106.77799999999999], "end": [78.4555, 109.55699999999999], "type": "segment", "width": 0.12}, {"start": [78.4555, 101.517], "end": [78.4555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.4155, 106.77799999999999], "end": [78.4155, 109.58699999999999], "type": "segment", "width": 0.12}, {"start": [78.4155, 101.487], "end": [78.4155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.3755, 106.77799999999999], "end": [78.3755, 109.61699999999999], "type": "segment", "width": 0.12}, {"start": [78.3755, 101.457], "end": [78.3755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.3355, 106.77799999999999], "end": [78.3355, 109.64699999999999], "type": "segment", "width": 0.12}, {"start": [78.3355, 101.42699999999999], "end": [78.3355, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.29549999999999, 106.77799999999999], "end": [78.29549999999999, 109.675], "type": "segment", "width": 0.12}, {"start": [78.29549999999999, 101.399], "end": [78.29549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.2555, 106.77799999999999], "end": [78.2555, 109.70299999999999], "type": "segment", "width": 0.12}, {"start": [78.2555, 101.371], "end": [78.2555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.21549999999999, 106.77799999999999], "end": [78.21549999999999, 109.731], "type": "segment", "width": 0.12}, {"start": [78.21549999999999, 101.34299999999999], "end": [78.21549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.1755, 106.77799999999999], "end": [78.1755, 109.758], "type": "segment", "width": 0.12}, {"start": [78.1755, 101.316], "end": [78.1755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.1355, 106.77799999999999], "end": [78.1355, 109.78399999999999], "type": "segment", "width": 0.12}, {"start": [78.1355, 101.28999999999999], "end": [78.1355, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.0955, 106.77799999999999], "end": [78.0955, 109.80999999999999], "type": "segment", "width": 0.12}, {"start": [78.0955, 101.264], "end": [78.0955, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.0555, 106.77799999999999], "end": [78.0555, 109.835], "type": "segment", "width": 0.12}, {"start": [78.0555, 101.23899999999999], "end": [78.0555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [78.0155, 106.77799999999999], "end": [78.0155, 109.86], "type": "segment", "width": 0.12}, {"start": [78.0155, 101.214], "end": [78.0155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.9755, 106.77799999999999], "end": [77.9755, 109.884], "type": "segment", "width": 0.12}, {"start": [77.9755, 101.19], "end": [77.9755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.93549999999999, 106.77799999999999], "end": [77.93549999999999, 109.908], "type": "segment", "width": 0.12}, {"start": [77.93549999999999, 101.166], "end": [77.93549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.8955, 106.77799999999999], "end": [77.8955, 109.93199999999999], "type": "segment", "width": 0.12}, {"start": [77.8955, 101.142], "end": [77.8955, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.85549999999999, 106.77799999999999], "end": [77.85549999999999, 109.954], "type": "segment", "width": 0.12}, {"start": [77.85549999999999, 101.11999999999999], "end": [77.85549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.8155, 106.77799999999999], "end": [77.8155, 109.97699999999999], "type": "segment", "width": 0.12}, {"start": [77.8155, 101.097], "end": [77.8155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.7755, 106.77799999999999], "end": [77.7755, 109.999], "type": "segment", "width": 0.12}, {"start": [77.7755, 101.07499999999999], "end": [77.7755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.7355, 106.77799999999999], "end": [77.7355, 110.02], "type": "segment", "width": 0.12}, {"start": [77.7355, 101.054], "end": [77.7355, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.6955, 106.77799999999999], "end": [77.6955, 110.041], "type": "segment", "width": 0.12}, {"start": [77.6955, 101.033], "end": [77.6955, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.6555, 106.77799999999999], "end": [77.6555, 110.062], "type": "segment", "width": 0.12}, {"start": [77.6555, 101.012], "end": [77.6555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.6155, 106.77799999999999], "end": [77.6155, 110.082], "type": "segment", "width": 0.12}, {"start": [77.6155, 100.99199999999999], "end": [77.6155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.57549999999999, 106.77799999999999], "end": [77.57549999999999, 110.101], "type": "segment", "width": 0.12}, {"start": [77.57549999999999, 100.973], "end": [77.57549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.5355, 106.77799999999999], "end": [77.5355, 110.121], "type": "segment", "width": 0.12}, {"start": [77.5355, 100.95299999999999], "end": [77.5355, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.49549999999999, 106.77799999999999], "end": [77.49549999999999, 110.14], "type": "segment", "width": 0.12}, {"start": [77.49549999999999, 100.934], "end": [77.49549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.4555, 106.77799999999999], "end": [77.4555, 110.158], "type": "segment", "width": 0.12}, {"start": [77.4555, 100.916], "end": [77.4555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.4155, 106.77799999999999], "end": [77.4155, 110.176], "type": "segment", "width": 0.12}, {"start": [77.4155, 100.898], "end": [77.4155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.3755, 106.77799999999999], "end": [77.3755, 110.19399999999999], "type": "segment", "width": 0.12}, {"start": [77.3755, 100.88], "end": [77.3755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.3355, 106.77799999999999], "end": [77.3355, 110.211], "type": "segment", "width": 0.12}, {"start": [77.3355, 100.863], "end": [77.3355, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.29549999999999, 106.77799999999999], "end": [77.29549999999999, 110.22699999999999], "type": "segment", "width": 0.12}, {"start": [77.29549999999999, 100.847], "end": [77.29549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.2555, 106.77799999999999], "end": [77.2555, 110.244], "type": "segment", "width": 0.12}, {"start": [77.2555, 100.83], "end": [77.2555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.21549999999999, 106.77799999999999], "end": [77.21549999999999, 110.25999999999999], "type": "segment", "width": 0.12}, {"start": [77.21549999999999, 100.814], "end": [77.21549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.1755, 106.77799999999999], "end": [77.1755, 110.27499999999999], "type": "segment", "width": 0.12}, {"start": [77.1755, 100.79899999999999], "end": [77.1755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.1355, 106.77799999999999], "end": [77.1355, 110.291], "type": "segment", "width": 0.12}, {"start": [77.1355, 100.783], "end": [77.1355, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.0955, 106.77799999999999], "end": [77.0955, 110.30499999999999], "type": "segment", "width": 0.12}, {"start": [77.0955, 100.76899999999999], "end": [77.0955, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.0555, 106.77799999999999], "end": [77.0555, 110.32], "type": "segment", "width": 0.12}, {"start": [77.0555, 100.75399999999999], "end": [77.0555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [77.0155, 106.77799999999999], "end": [77.0155, 110.33399999999999], "type": "segment", "width": 0.12}, {"start": [77.0155, 100.74], "end": [77.0155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.9755, 106.77799999999999], "end": [76.9755, 110.348], "type": "segment", "width": 0.12}, {"start": [76.9755, 100.726], "end": [76.9755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.93549999999999, 106.77799999999999], "end": [76.93549999999999, 110.36099999999999], "type": "segment", "width": 0.12}, {"start": [76.93549999999999, 100.713], "end": [76.93549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.8955, 106.77799999999999], "end": [76.8955, 110.374], "type": "segment", "width": 0.12}, {"start": [76.8955, 100.69999999999999], "end": [76.8955, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.85549999999999, 106.77799999999999], "end": [76.85549999999999, 110.387], "type": "segment", "width": 0.12}, {"start": [76.85549999999999, 100.687], "end": [76.85549999999999, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.8155, 106.77799999999999], "end": [76.8155, 110.399], "type": "segment", "width": 0.12}, {"start": [76.8155, 100.675], "end": [76.8155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.7755, 106.77799999999999], "end": [76.7755, 110.411], "type": "segment", "width": 0.12}, {"start": [76.7755, 100.663], "end": [76.7755, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.7355, 106.77799999999999], "end": [76.7355, 110.422], "type": "segment", "width": 0.12}, {"start": [76.7355, 100.652], "end": [76.7355, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.6955, 106.77799999999999], "end": [76.6955, 110.434], "type": "segment", "width": 0.12}, {"start": [76.6955, 100.64], "end": [76.6955, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.6555, 106.77799999999999], "end": [76.6555, 110.44399999999999], "type": "segment", "width": 0.12}, {"start": [76.6555, 100.63], "end": [76.6555, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.6155, 106.77799999999999], "end": [76.6155, 110.455], "type": "segment", "width": 0.12}, {"start": [76.6155, 100.619], "end": [76.6155, 104.29599999999999], "type": "segment", "width": 0.12}, {"start": [76.57549999999999, 100.609], "end": [76.57549999999999, 110.46499999999999], "type": "segment", "width": 0.12}, {"start": [76.5355, 100.59899999999999], "end": [76.5355, 110.475], "type": "segment", "width": 0.12}, {"start": [76.49549999999999, 100.58999999999999], "end": [76.49549999999999, 110.484], "type": "segment", "width": 0.12}, {"start": [76.4555, 100.58099999999999], "end": [76.4555, 110.493], "type": "segment", "width": 0.12}, {"start": [76.4155, 100.57199999999999], "end": [76.4155, 110.502], "type": "segment", "width": 0.12}, {"start": [76.3755, 100.563], "end": [76.3755, 110.511], "type": "segment", "width": 0.12}, {"start": [76.3355, 100.55499999999999], "end": [76.3355, 110.51899999999999], "type": "segment", "width": 0.12}, {"start": [76.29549999999999, 100.547], "end": [76.29549999999999, 110.527], "type": "segment", "width": 0.12}, {"start": [76.2555, 100.53999999999999], "end": [76.2555, 110.53399999999999], "type": "segment", "width": 0.12}, {"start": [76.21549999999999, 100.533], "end": [76.21549999999999, 110.541], "type": "segment", "width": 0.12}, {"start": [76.1755, 100.526], "end": [76.1755, 110.548], "type": "segment", "width": 0.12}, {"start": [76.1355, 100.51899999999999], "end": [76.1355, 110.55499999999999], "type": "segment", "width": 0.12}, {"start": [76.0955, 100.51299999999999], "end": [76.0955, 110.56099999999999], "type": "segment", "width": 0.12}, {"start": [76.0555, 100.50699999999999], "end": [76.0555, 110.567], "type": "segment", "width": 0.12}, {"start": [76.0145, 100.502], "end": [76.0145, 110.57199999999999], "type": "segment", "width": 0.12}, {"start": [75.97449999999999, 100.497], "end": [75.97449999999999, 110.577], "type": "segment", "width": 0.12}, {"start": [75.9345, 100.49199999999999], "end": [75.9345, 110.582], "type": "segment", "width": 0.12}, {"start": [75.8945, 100.487], "end": [75.8945, 110.58699999999999], "type": "segment", "width": 0.12}, {"start": [75.8545, 100.48299999999999], "end": [75.8545, 110.591], "type": "segment", "width": 0.12}, {"start": [75.8145, 100.479], "end": [75.8145, 110.595], "type": "segment", "width": 0.12}, {"start": [75.7745, 100.475], "end": [75.7745, 110.59899999999999], "type": "segment", "width": 0.12}, {"start": [75.7345, 100.472], "end": [75.7345, 110.60199999999999], "type": "segment", "width": 0.12}, {"start": [75.69449999999999, 100.469], "end": [75.69449999999999, 110.60499999999999], "type": "segment", "width": 0.12}, {"start": [75.6545, 100.467], "end": [75.6545, 110.607], "type": "segment", "width": 0.12}, {"start": [75.61449999999999, 100.464], "end": [75.61449999999999, 110.61], "type": "segment", "width": 0.12}, {"start": [75.5745, 100.46199999999999], "end": [75.5745, 110.612], "type": "segment", "width": 0.12}, {"start": [75.5345, 100.46], "end": [75.5345, 110.61399999999999], "type": "segment", "width": 0.12}, {"start": [75.4945, 100.45899999999999], "end": [75.4945, 110.615], "type": "segment", "width": 0.12}, {"start": [75.4545, 100.458], "end": [75.4545, 110.616], "type": "segment", "width": 0.12}, {"start": [75.41449999999999, 100.457], "end": [75.41449999999999, 110.61699999999999], "type": "segment", "width": 0.12}, {"start": [75.3745, 100.457], "end": [75.3745, 110.61699999999999], "type": "segment", "width": 0.12}, {"start": [75.33449999999999, 100.457], "end": [75.33449999999999, 110.61699999999999], "type": "segment", "width": 0.12}, {"start": [75.33449999999999, 105.53699999999999], "radius": 5.12, "type": "circle", "width": 0.12}, {"start": [75.33449999999999, 74.35849999999999], "radius": 5.12, "type": "circle", "width": 0.12}, {"start": [75.33449999999999, 69.2785], "end": [75.33449999999999, 79.43849999999999], "type": "segment", "width": 0.12}, {"start": [75.3745, 69.2785], "end": [75.3745, 79.43849999999999], "type": "segment", "width": 0.12}, {"start": [75.41449999999999, 69.2785], "end": [75.41449999999999, 79.43849999999999], "type": "segment", "width": 0.12}, {"start": [75.4545, 69.2795], "end": [75.4545, 79.4375], "type": "segment", "width": 0.12}, {"start": [75.4945, 69.2805], "end": [75.4945, 79.4365], "type": "segment", "width": 0.12}, {"start": [75.5345, 69.2815], "end": [75.5345, 79.43549999999999], "type": "segment", "width": 0.12}, {"start": [75.5745, 69.2835], "end": [75.5745, 79.4335], "type": "segment", "width": 0.12}, {"start": [75.61449999999999, 69.2855], "end": [75.61449999999999, 79.4315], "type": "segment", "width": 0.12}, {"start": [75.6545, 69.2885], "end": [75.6545, 79.4285], "type": "segment", "width": 0.12}, {"start": [75.69449999999999, 69.2905], "end": [75.69449999999999, 79.42649999999999], "type": "segment", "width": 0.12}, {"start": [75.7345, 69.2935], "end": [75.7345, 79.42349999999999], "type": "segment", "width": 0.12}, {"start": [75.7745, 69.2965], "end": [75.7745, 79.42049999999999], "type": "segment", "width": 0.12}, {"start": [75.8145, 69.3005], "end": [75.8145, 79.4165], "type": "segment", "width": 0.12}, {"start": [75.8545, 69.30449999999999], "end": [75.8545, 79.4125], "type": "segment", "width": 0.12}, {"start": [75.8945, 69.3085], "end": [75.8945, 79.40849999999999], "type": "segment", "width": 0.12}, {"start": [75.9345, 69.31349999999999], "end": [75.9345, 79.4035], "type": "segment", "width": 0.12}, {"start": [75.97449999999999, 69.3185], "end": [75.97449999999999, 79.3985], "type": "segment", "width": 0.12}, {"start": [76.0145, 69.3235], "end": [76.0145, 79.3935], "type": "segment", "width": 0.12}, {"start": [76.0555, 69.32849999999999], "end": [76.0555, 79.3885], "type": "segment", "width": 0.12}, {"start": [76.0955, 69.33449999999999], "end": [76.0955, 79.3825], "type": "segment", "width": 0.12}, {"start": [76.1355, 69.34049999999999], "end": [76.1355, 79.3765], "type": "segment", "width": 0.12}, {"start": [76.1755, 69.3475], "end": [76.1755, 79.3695], "type": "segment", "width": 0.12}, {"start": [76.21549999999999, 69.3545], "end": [76.21549999999999, 79.3625], "type": "segment", "width": 0.12}, {"start": [76.2555, 69.36149999999999], "end": [76.2555, 79.35549999999999], "type": "segment", "width": 0.12}, {"start": [76.29549999999999, 69.3685], "end": [76.29549999999999, 79.3485], "type": "segment", "width": 0.12}, {"start": [76.3355, 69.3765], "end": [76.3355, 79.34049999999999], "type": "segment", "width": 0.12}, {"start": [76.3755, 69.3845], "end": [76.3755, 79.3325], "type": "segment", "width": 0.12}, {"start": [76.4155, 69.3935], "end": [76.4155, 79.3235], "type": "segment", "width": 0.12}, {"start": [76.4555, 69.4025], "end": [76.4555, 79.3145], "type": "segment", "width": 0.12}, {"start": [76.49549999999999, 69.4115], "end": [76.49549999999999, 79.3055], "type": "segment", "width": 0.12}, {"start": [76.5355, 69.42049999999999], "end": [76.5355, 79.2965], "type": "segment", "width": 0.12}, {"start": [76.57549999999999, 69.4305], "end": [76.57549999999999, 79.28649999999999], "type": "segment", "width": 0.12}, {"start": [76.6155, 69.4405], "end": [76.6155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.6155, 75.59949999999999], "end": [76.6155, 79.2765], "type": "segment", "width": 0.12}, {"start": [76.6555, 69.4515], "end": [76.6555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.6555, 75.59949999999999], "end": [76.6555, 79.2655], "type": "segment", "width": 0.12}, {"start": [76.6955, 69.4615], "end": [76.6955, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.6955, 75.59949999999999], "end": [76.6955, 79.2555], "type": "segment", "width": 0.12}, {"start": [76.7355, 69.4735], "end": [76.7355, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.7355, 75.59949999999999], "end": [76.7355, 79.2435], "type": "segment", "width": 0.12}, {"start": [76.7755, 69.4845], "end": [76.7755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.7755, 75.59949999999999], "end": [76.7755, 79.2325], "type": "segment", "width": 0.12}, {"start": [76.8155, 69.4965], "end": [76.8155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.8155, 75.59949999999999], "end": [76.8155, 79.2205], "type": "segment", "width": 0.12}, {"start": [76.85549999999999, 69.5085], "end": [76.85549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.85549999999999, 75.59949999999999], "end": [76.85549999999999, 79.2085], "type": "segment", "width": 0.12}, {"start": [76.8955, 69.5215], "end": [76.8955, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.8955, 75.59949999999999], "end": [76.8955, 79.1955], "type": "segment", "width": 0.12}, {"start": [76.93549999999999, 69.5345], "end": [76.93549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.93549999999999, 75.59949999999999], "end": [76.93549999999999, 79.18249999999999], "type": "segment", "width": 0.12}, {"start": [76.9755, 69.5475], "end": [76.9755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [76.9755, 75.59949999999999], "end": [76.9755, 79.1695], "type": "segment", "width": 0.12}, {"start": [77.0155, 69.5615], "end": [77.0155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.0155, 75.59949999999999], "end": [77.0155, 79.15549999999999], "type": "segment", "width": 0.12}, {"start": [77.0555, 69.57549999999999], "end": [77.0555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.0555, 75.59949999999999], "end": [77.0555, 79.1415], "type": "segment", "width": 0.12}, {"start": [77.0955, 69.59049999999999], "end": [77.0955, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.0955, 75.59949999999999], "end": [77.0955, 79.1265], "type": "segment", "width": 0.12}, {"start": [77.1355, 69.6045], "end": [77.1355, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.1355, 75.59949999999999], "end": [77.1355, 79.1125], "type": "segment", "width": 0.12}, {"start": [77.1755, 69.62049999999999], "end": [77.1755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.1755, 75.59949999999999], "end": [77.1755, 79.09649999999999], "type": "segment", "width": 0.12}, {"start": [77.21549999999999, 69.6355], "end": [77.21549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.21549999999999, 75.59949999999999], "end": [77.21549999999999, 79.08149999999999], "type": "segment", "width": 0.12}, {"start": [77.2555, 69.6515], "end": [77.2555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.2555, 75.59949999999999], "end": [77.2555, 79.0655], "type": "segment", "width": 0.12}, {"start": [77.29549999999999, 69.6685], "end": [77.29549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.29549999999999, 75.59949999999999], "end": [77.29549999999999, 79.04849999999999], "type": "segment", "width": 0.12}, {"start": [77.3355, 69.6845], "end": [77.3355, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.3355, 75.59949999999999], "end": [77.3355, 79.0325], "type": "segment", "width": 0.12}, {"start": [77.3755, 69.7015], "end": [77.3755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.3755, 75.59949999999999], "end": [77.3755, 79.0155], "type": "segment", "width": 0.12}, {"start": [77.4155, 69.7195], "end": [77.4155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.4155, 75.59949999999999], "end": [77.4155, 78.9975], "type": "segment", "width": 0.12}, {"start": [77.4555, 69.7375], "end": [77.4555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.4555, 75.59949999999999], "end": [77.4555, 78.9795], "type": "segment", "width": 0.12}, {"start": [77.49549999999999, 69.7555], "end": [77.49549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.49549999999999, 75.59949999999999], "end": [77.49549999999999, 78.9615], "type": "segment", "width": 0.12}, {"start": [77.5355, 69.7745], "end": [77.5355, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.5355, 75.59949999999999], "end": [77.5355, 78.9425], "type": "segment", "width": 0.12}, {"start": [77.57549999999999, 69.7945], "end": [77.57549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.57549999999999, 75.59949999999999], "end": [77.57549999999999, 78.9225], "type": "segment", "width": 0.12}, {"start": [77.6155, 69.81349999999999], "end": [77.6155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.6155, 75.59949999999999], "end": [77.6155, 78.9035], "type": "segment", "width": 0.12}, {"start": [77.6555, 69.8335], "end": [77.6555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.6555, 75.59949999999999], "end": [77.6555, 78.8835], "type": "segment", "width": 0.12}, {"start": [77.6955, 69.8545], "end": [77.6955, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.6955, 75.59949999999999], "end": [77.6955, 78.8625], "type": "segment", "width": 0.12}, {"start": [77.7355, 69.8755], "end": [77.7355, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.7355, 75.59949999999999], "end": [77.7355, 78.8415], "type": "segment", "width": 0.12}, {"start": [77.7755, 69.8965], "end": [77.7755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.7755, 75.59949999999999], "end": [77.7755, 78.8205], "type": "segment", "width": 0.12}, {"start": [77.8155, 69.9185], "end": [77.8155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.8155, 75.59949999999999], "end": [77.8155, 78.79849999999999], "type": "segment", "width": 0.12}, {"start": [77.85549999999999, 69.94149999999999], "end": [77.85549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.85549999999999, 75.59949999999999], "end": [77.85549999999999, 78.7755], "type": "segment", "width": 0.12}, {"start": [77.8955, 69.9635], "end": [77.8955, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.8955, 75.59949999999999], "end": [77.8955, 78.7535], "type": "segment", "width": 0.12}, {"start": [77.93549999999999, 69.9875], "end": [77.93549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.93549999999999, 75.59949999999999], "end": [77.93549999999999, 78.7295], "type": "segment", "width": 0.12}, {"start": [77.9755, 70.0115], "end": [77.9755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [77.9755, 75.59949999999999], "end": [77.9755, 78.7055], "type": "segment", "width": 0.12}, {"start": [78.0155, 70.0355], "end": [78.0155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.0155, 75.59949999999999], "end": [78.0155, 78.6815], "type": "segment", "width": 0.12}, {"start": [78.0555, 70.06049999999999], "end": [78.0555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.0555, 75.59949999999999], "end": [78.0555, 78.6565], "type": "segment", "width": 0.12}, {"start": [78.0955, 70.0855], "end": [78.0955, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.0955, 75.59949999999999], "end": [78.0955, 78.6315], "type": "segment", "width": 0.12}, {"start": [78.1355, 70.11149999999999], "end": [78.1355, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.1355, 75.59949999999999], "end": [78.1355, 78.60549999999999], "type": "segment", "width": 0.12}, {"start": [78.1755, 70.1375], "end": [78.1755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.1755, 75.59949999999999], "end": [78.1755, 78.5795], "type": "segment", "width": 0.12}, {"start": [78.21549999999999, 70.1645], "end": [78.21549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.21549999999999, 75.59949999999999], "end": [78.21549999999999, 78.5525], "type": "segment", "width": 0.12}, {"start": [78.2555, 70.1925], "end": [78.2555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.2555, 75.59949999999999], "end": [78.2555, 78.5245], "type": "segment", "width": 0.12}, {"start": [78.29549999999999, 70.2205], "end": [78.29549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.29549999999999, 75.59949999999999], "end": [78.29549999999999, 78.4965], "type": "segment", "width": 0.12}, {"start": [78.3355, 70.24849999999999], "end": [78.3355, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.3355, 75.59949999999999], "end": [78.3355, 78.46849999999999], "type": "segment", "width": 0.12}, {"start": [78.3755, 70.2785], "end": [78.3755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.3755, 75.59949999999999], "end": [78.3755, 78.43849999999999], "type": "segment", "width": 0.12}, {"start": [78.4155, 70.3085], "end": [78.4155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.4155, 75.59949999999999], "end": [78.4155, 78.40849999999999], "type": "segment", "width": 0.12}, {"start": [78.4555, 70.3385], "end": [78.4555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.4555, 75.59949999999999], "end": [78.4555, 78.3785], "type": "segment", "width": 0.12}, {"start": [78.49549999999999, 70.3695], "end": [78.49549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.49549999999999, 75.59949999999999], "end": [78.49549999999999, 78.3475], "type": "segment", "width": 0.12}, {"start": [78.5355, 70.4015], "end": [78.5355, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.5355, 75.59949999999999], "end": [78.5355, 78.3155], "type": "segment", "width": 0.12}, {"start": [78.57549999999999, 70.4335], "end": [78.57549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.57549999999999, 75.59949999999999], "end": [78.57549999999999, 78.28349999999999], "type": "segment", "width": 0.12}, {"start": [78.6155, 70.4665], "end": [78.6155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.6155, 75.59949999999999], "end": [78.6155, 78.2505], "type": "segment", "width": 0.12}, {"start": [78.6555, 70.5005], "end": [78.6555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.6555, 75.59949999999999], "end": [78.6555, 78.2165], "type": "segment", "width": 0.12}, {"start": [78.6955, 70.5345], "end": [78.6955, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.6955, 75.59949999999999], "end": [78.6955, 78.18249999999999], "type": "segment", "width": 0.12}, {"start": [78.7355, 70.56949999999999], "end": [78.7355, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.7355, 75.59949999999999], "end": [78.7355, 78.1475], "type": "segment", "width": 0.12}, {"start": [78.7755, 70.60549999999999], "end": [78.7755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.7755, 75.59949999999999], "end": [78.7755, 78.11149999999999], "type": "segment", "width": 0.12}, {"start": [78.8155, 70.6425], "end": [78.8155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.8155, 75.59949999999999], "end": [78.8155, 78.0745], "type": "segment", "width": 0.12}, {"start": [78.85549999999999, 70.67949999999999], "end": [78.85549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.85549999999999, 75.59949999999999], "end": [78.85549999999999, 78.0375], "type": "segment", "width": 0.12}, {"start": [78.8955, 70.71849999999999], "end": [78.8955, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.8955, 75.59949999999999], "end": [78.8955, 77.99849999999999], "type": "segment", "width": 0.12}, {"start": [78.93549999999999, 70.7575], "end": [78.93549999999999, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.93549999999999, 75.59949999999999], "end": [78.93549999999999, 77.95949999999999], "type": "segment", "width": 0.12}, {"start": [78.9755, 70.7975], "end": [78.9755, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [78.9755, 75.59949999999999], "end": [78.9755, 77.9195], "type": "segment", "width": 0.12}, {"start": [79.0155, 70.8385], "end": [79.0155, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [79.0155, 75.59949999999999], "end": [79.0155, 77.8785], "type": "segment", "width": 0.12}, {"start": [79.0555, 70.8805], "end": [79.0555, 73.11749999999999], "type": "segment", "width": 0.12}, {"start": [79.0555, 75.59949999999999], "end": [79.0555, 77.8365], "type": "segment", "width": 0.12}, {"start": [79.0955, 70.9225], "end": [79.0955, 77.7945], "type": "segment", "width": 0.12}, {"start": [79.1355, 70.9665], "end": [79.1355, 77.7505], "type": "segment", "width": 0.12}, {"start": [79.1755, 71.0115], "end": [79.1755, 77.7055], "type": "segment", "width": 0.12}, {"start": [79.21549999999999, 71.05749999999999], "end": [79.21549999999999, 77.6595], "type": "segment", "width": 0.12}, {"start": [79.2555, 71.1045], "end": [79.2555, 77.6125], "type": "segment", "width": 0.12}, {"start": [79.29549999999999, 71.1525], "end": [79.29549999999999, 77.5645], "type": "segment", "width": 0.12}, {"start": [79.3355, 71.2025], "end": [79.3355, 77.5145], "type": "segment", "width": 0.12}, {"start": [79.3755, 71.2525], "end": [79.3755, 77.4645], "type": "segment", "width": 0.12}, {"start": [79.4155, 71.30449999999999], "end": [79.4155, 77.4125], "type": "segment", "width": 0.12}, {"start": [79.4555, 71.35849999999999], "end": [79.4555, 77.35849999999999], "type": "segment", "width": 0.12}, {"start": [79.49549999999999, 71.4135], "end": [79.49549999999999, 77.3035], "type": "segment", "width": 0.12}, {"start": [79.5355, 71.4695], "end": [79.5355, 77.2475], "type": "segment", "width": 0.12}, {"start": [79.57549999999999, 71.5285], "end": [79.57549999999999, 77.18849999999999], "type": "segment", "width": 0.12}, {"start": [79.6155, 71.5885], "end": [79.6155, 77.1285], "type": "segment", "width": 0.12}, {"start": [79.65549999999999, 71.6495], "end": [79.65549999999999, 77.0675], "type": "segment", "width": 0.12}, {"start": [79.6955, 71.7135], "end": [79.6955, 77.0035], "type": "segment", "width": 0.12}, {"start": [79.7355, 71.7795], "end": [79.7355, 76.9375], "type": "segment", "width": 0.12}, {"start": [79.7755, 71.8485], "end": [79.7755, 76.8685], "type": "segment", "width": 0.12}, {"start": [79.8155, 71.9195], "end": [79.8155, 76.7975], "type": "segment", "width": 0.12}, {"start": [79.85549999999999, 71.9935], "end": [79.85549999999999, 76.7235], "type": "segment", "width": 0.12}, {"start": [79.8955, 72.06949999999999], "end": [79.8955, 76.6475], "type": "segment", "width": 0.12}, {"start": [79.93549999999999, 72.1495], "end": [79.93549999999999, 76.5675], "type": "segment", "width": 0.12}, {"start": [79.9755, 72.23349999999999], "end": [79.9755, 76.48349999999999], "type": "segment", "width": 0.12}, {"start": [80.0155, 72.3215], "end": [80.0155, 76.3955], "type": "segment", "width": 0.12}, {"start": [80.0555, 72.41449999999999], "end": [80.0555, 76.3025], "type": "segment", "width": 0.12}, {"start": [80.0955, 72.5125], "end": [80.0955, 76.2045], "type": "segment", "width": 0.12}, {"start": [80.1355, 72.6165], "end": [80.1355, 76.1005], "type": "segment", "width": 0.12}, {"start": [80.1755, 72.7285], "end": [80.1755, 75.9885], "type": "segment", "width": 0.12}, {"start": [80.21549999999999, 72.8485], "end": [80.21549999999999, 75.8685], "type": "segment", "width": 0.12}, {"start": [80.2555, 72.98049999999999], "end": [80.2555, 75.73649999999999], "type": "segment", "width": 0.12}, {"start": [80.29549999999999, 73.1285], "end": [80.29549999999999, 75.5885], "type": "segment", "width": 0.12}, {"start": [80.3355, 73.2965], "end": [80.3355, 75.42049999999999], "type": "segment", "width": 0.12}, {"start": [80.3755, 73.4965], "end": [80.3755, 75.2205], "type": "segment", "width": 0.12}, {"start": [80.4155, 73.7595], "end": [80.4155, 74.9575], "type": "segment", "width": 0.12}, {"start": [69.854854, 71.48349999999999], "end": [70.854854, 71.48349999999999], "type": "segment", "width": 0.12}, {"start": [70.354854, 70.98349999999999], "end": [70.354854, 71.98349999999999], "type": "segment", "width": 0.12}, {"start": [37.846, 97.26299999999999], "radius": 2.1799999999999997, "type": "circle", "width": 0.12}, {"start": [37.846, 92.26299999999999], "radius": 2.1799999999999997, "type": "circle", "width": 0.12}, {"start": [37.846, 87.26299999999999], "radius": 2.1799999999999997, "type": "circle", "width": 0.12}, {"start": [37.846, 82.26299999999999], "radius": 2.1799999999999997, "type": "circle", "width": 0.12}, {"start": [37.846, 77.26299999999999], "radius": 2.1799999999999997, "type": "circle", "width": 0.12}, {"start": [37.846, 72.26299999999999], "radius": 2.1799999999999997, "type": "circle", "width": 0.12}, {"start": [42.446, 99.823], "end": [42.446, 69.703], "type": "segment", "width": 0.12}, {"start": [41.346, 99.823], "end": [41.346, 69.703], "type": "segment", "width": 0.12}, {"start": [33.786, 99.823], "end": [33.786, 69.703], "type": "segment", "width": 0.12}, {"start": [42.906, 99.823], "end": [42.906, 69.703], "type": "segment", "width": 0.12}, {"start": [33.786, 99.823], "end": [42.906, 99.823], "type": "segment", "width": 0.12}, {"start": [33.786, 69.703], "end": [42.906, 69.703], "type": "segment", "width": 0.12}, {"start": [36.458, 95.609], "end": [36.565, 95.716], "type": "segment", "width": 0.12}, {"start": [39.393, 98.545], "end": [39.5, 98.651], "type": "segment", "width": 0.12}, {"start": [36.192, 95.875], "end": [36.299, 95.982], "type": "segment", "width": 0.12}, {"start": [39.126999999999995, 98.81099999999999], "end": [39.234, 98.917], "type": "segment", "width": 0.12}, {"start": [36.458, 90.609], "end": [36.854, 91.00399999999999], "type": "segment", "width": 0.12}, {"start": [39.12, 93.27], "end": [39.5, 93.64999999999999], "type": "segment", "width": 0.12}, {"start": [36.192, 90.875], "end": [36.571999999999996, 91.255], "type": "segment", "width": 0.12}, {"start": [38.838, 93.521], "end": [39.234, 93.916], "type": "segment", "width": 0.12}, {"start": [36.458, 85.609], "end": [36.854, 86.00399999999999], "type": "segment", "width": 0.12}, {"start": [39.12, 88.27], "end": [39.5, 88.64999999999999], "type": "segment", "width": 0.12}, {"start": [36.192, 85.875], "end": [36.571999999999996, 86.255], "type": "segment", "width": 0.12}, {"start": [38.838, 88.521], "end": [39.234, 88.916], "type": "segment", "width": 0.12}, {"start": [36.458, 80.609], "end": [36.854, 81.00399999999999], "type": "segment", "width": 0.12}, {"start": [39.12, 83.27], "end": [39.5, 83.64999999999999], "type": "segment", "width": 0.12}, {"start": [36.192, 80.875], "end": [36.571999999999996, 81.255], "type": "segment", "width": 0.12}, {"start": [38.838, 83.521], "end": [39.234, 83.916], "type": "segment", "width": 0.12}, {"start": [36.458, 75.609], "end": [36.854, 76.00399999999999], "type": "segment", "width": 0.12}, {"start": [39.12, 78.27], "end": [39.5, 78.64999999999999], "type": "segment", "width": 0.12}, {"start": [36.192, 75.875], "end": [36.571999999999996, 76.255], "type": "segment", "width": 0.12}, {"start": [38.838, 78.521], "end": [39.234, 78.916], "type": "segment", "width": 0.12}, {"start": [36.458, 70.609], "end": [36.854, 71.00399999999999], "type": "segment", "width": 0.12}, {"start": [39.12, 73.27], "end": [39.5, 73.64999999999999], "type": "segment", "width": 0.12}, {"start": [36.192, 70.875], "end": [36.571999999999996, 71.255], "type": "segment", "width": 0.12}, {"start": [38.838, 73.521], "end": [39.234, 73.916], "type": "segment", "width": 0.12}, {"start": [42.506, 100.063], "end": [43.146, 100.063], "type": "segment", "width": 0.12}, {"start": [43.146, 100.063], "end": [43.146, 99.663], "type": "segment", "width": 0.12}, {"start": [100.39, 118.17], "end": [100.39, 115.50999999999999], "type": "segment", "width": 0.12}, {"start": [80.00999999999999, 118.17], "end": [100.39, 118.17], "type": "segment", "width": 0.12}, {"start": [80.00999999999999, 115.50999999999999], "end": [100.39, 115.50999999999999], "type": "segment", "width": 0.12}, {"start": [80.00999999999999, 118.17], "end": [80.00999999999999, 115.50999999999999], "type": "segment", "width": 0.12}, {"start": [78.74, 118.17], "end": [77.41, 118.17], "type": "segment", "width": 0.12}, {"start": [77.41, 118.17], "end": [77.41, 116.83999999999999], "type": "segment", "width": 0.12}, {"start": [57.599, 69.935936], "end": [57.599, 74.040064], "type": "segment", "width": 0.12}, {"start": [61.019, 69.935936], "end": [61.019, 74.040064], "type": "segment", "width": 0.12}, {"start": [61.663, 69.935936], "end": [61.663, 74.040064], "type": "segment", "width": 0.12}, {"start": [65.083, 69.935936], "end": [65.083, 74.040064], "type": "segment", "width": 0.12}, {"start": [69.14699999999999, 69.935936], "end": [69.14699999999999, 74.040064], "type": "segment", "width": 0.12}, {"start": [65.727, 69.935936], "end": [65.727, 74.040064], "type": "segment", "width": 0.12}, {"start": [57.3323, 111.178764], "end": [57.3323, 107.074636], "type": "segment", "width": 0.12}, {"start": [60.7523, 111.178764], "end": [60.7523, 107.074636], "type": "segment", "width": 0.12}, {"start": [64.8163, 111.178764], "end": [64.8163, 107.074636], "type": "segment", "width": 0.12}, {"start": [61.3963, 111.178764], "end": [61.3963, 107.074636], "type": "segment", "width": 0.12}, {"start": [65.4603, 111.178764], "end": [65.4603, 107.074636], "type": "segment", "width": 0.12}, {"start": [68.88029999999999, 111.178764], "end": [68.88029999999999, 107.074636], "type": "segment", "width": 0.12}, {"angle": 0.0, "horiz_justify": 0, "text": "C22", "pos": [75.6412, 87.37599999999999], "height": 1.0, "width": 1.0}, {"start": [75.50392099999999, 88.4408], "end": [75.82947899999999, 88.4408], "type": "segment", "width": 0.12}, {"start": [75.50392099999999, 89.46079999999999], "end": [75.82947899999999, 89.46079999999999], "type": "segment", "width": 0.12}, {"start": [80.832, 93.9384], "end": [80.832, 91.27839999999999], "type": "segment", "width": 0.12}, {"start": [78.232, 93.9384], "end": [80.832, 93.9384], "type": "segment", "width": 0.12}, {"start": [78.232, 91.27839999999999], "end": [80.832, 91.27839999999999], "type": "segment", "width": 0.12}, {"start": [78.232, 93.9384], "end": [78.232, 91.27839999999999], "type": "segment", "width": 0.12}, {"start": [76.962, 93.9384], "end": [75.63199999999999, 93.9384], "type": "segment", "width": 0.12}, {"start": [75.63199999999999, 93.9384], "end": [75.63199999999999, 92.60839999999999], "type": "segment", "width": 0.12}]}, "edges_bbox": {"minx": 33.706998999999996, "miny": 61.265999, "maxx": 111.45400099999999, "maxy": 118.693001}, "metadata": {"date": "2018-10-28 18:05:07", "company": "", "revision": "", "title": "wifistepper"}}
+///////////////////////////////////////////////
+
+///////////////////////////////////////////////
+/* PCB rendering code */
+
+var redrawOnDrag = true;
+
+function deg2rad(deg) {
+  return deg * Math.PI / 180;
+}
+
+function drawtext(ctx, scalefactor, text, color, flip) {
+  ctx.save();
+  ctx.translate(...text.pos);
+  angle = -text.angle;
+  if (flip) {
+    ctx.scale(-1, 1);
+    angle = -angle;
+  }
+  txt = text.text.split("\n")
+  ctx.rotate(deg2rad(angle));
+  ctx.scale(text.width, text.height);
+  ctx.fillStyle = color;
+  switch (text.horiz_justify) {
+    case -1:
+      ctx.textAlign = "left";
+      break;
+    case 0:
+      ctx.textAlign = "center";
+      break;
+    case 1:
+      ctx.textAlign = "right";
+      break;
+  }
+  for (i = 0; i < txt.length; i++) {
+    offset = -(txt.length - 1) * 0.8 + i * 1.6;
+    ctx.fillText(txt[i], 0, offset);
+  }
+  ctx.restore();
+}
+
+function drawedge(ctx, scalefactor, edge, color) {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(1 / scalefactor, edge.width);
+  ctx.lineCap = "round";
+  if (edge.type == "segment") {
+    ctx.beginPath();
+    ctx.moveTo(...edge.start);
+    ctx.lineTo(...edge.end);
+    ctx.stroke();
+  }
+  if (edge.type == "arc") {
+    ctx.beginPath();
+    ctx.arc(
+      ...edge.start,
+      edge.radius,
+      deg2rad(edge.startangle),
+      deg2rad(edge.endangle));
+    ctx.stroke();
+  }
+  if (edge.type == "circle") {
+    ctx.beginPath();
+    ctx.arc(
+      ...edge.start,
+      edge.radius,
+      0, 2 * Math.PI);
+    ctx.stroke();
+  }
+}
+
+function drawOblong(ctx, scalefactor, color, size) {
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineCap = "round";
+  if (size[0] > size[1]) {
+    ctx.lineWidth = size[1];
+    var from = [-size[0] / 2 + size[1] / 2, 0];
+    var to = [-from[0], 0];
+  } else {
+    ctx.lineWidth = size[0];
+    var from = [0, -size[1] / 2 + size[0] / 2];
+    var to = [0, -from[1]];
+  }
+  ctx.moveTo(...from);
+  ctx.lineTo(...to);
+  ctx.stroke();
+}
+
+function drawRoundRect(ctx, scalefactor, color, size, radius) {
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  x = size[0] * -0.5;
+  y = size[1] * -0.5;
+  width = size[0];
+  height = size[1];
+  ctx.moveTo(x, 0);
+  ctx.arcTo(x, y + height, x + width, y + height, radius);
+  ctx.arcTo(x + width, y + height, x + width, y, radius);
+  ctx.arcTo(x + width, y, x, y, radius);
+  ctx.arcTo(x, y, x, y + height, radius);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawPolygons(ctx, scalefactor, color, polygons) {
+  ctx.fillStyle = color;
+  for (polygon of polygons) {
+    ctx.beginPath();
+    for (vertex of polygon) {
+      ctx.lineTo(...vertex)
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function drawPolygonShape(ctx, scalefactor, shape, color) {
+  ctx.save();
+  ctx.translate(...shape.pos);
+  ctx.rotate(deg2rad(-shape.angle));
+  drawPolygons(ctx, scalefactor, color, shape.polygons);
+  ctx.restore();
+}
+
+function drawDrawing(ctx, layer, scalefactor, drawing, color) {
+  if (["segment", "arc", "circle"].includes(drawing.type)) {
+    drawedge(ctx, scalefactor, drawing, color);
+  } else if (drawing.type == "polygon") {
+    drawPolygonShape(ctx, scalefactor, drawing, color);
+  } else {
+    drawtext(ctx, scalefactor, drawing, color, layer == "B");
+  }
+}
+
+function drawModule(ctx, layer, scalefactor, module, highlight) {
+  var padcolor = "#808080";
+  if (highlight) {
+    padcolor = "#D04040";
+    // draw bounding box
+    if (module.layer == layer) {
+      ctx.save();
+      ctx.globalAlpha = 0.2;
+      ctx.translate(...module.bbox.pos);
+      ctx.fillStyle = "#D04040";
+      ctx.fillRect(
+        0, 0,
+        ...module.bbox.size);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#D04040";
+      ctx.lineWidth = 2 / scalefactor;
+      ctx.strokeRect(
+        0, 0,
+        ...module.bbox.size);
+      ctx.restore();
+    }
+  }
+  // draw drawings
+  for (drawing of module.drawings) {
+    if (drawing.layer == layer) {
+      drawDrawing(ctx, layer, scalefactor, drawing.drawing, padcolor);
+    }
+  }
+  // draw pads
+  for (pad of module.pads) {
+    if (pad.layers.includes(layer)) {
+      ctx.save();
+      ctx.translate(...pad.pos);
+      ctx.rotate(deg2rad(pad.angle));
+      if (pad.offset) {
+        ctx.translate(...pad.offset);
+      }
+      ctx.fillStyle = padcolor;
+      if (pad.shape == "rect") {
+        ctx.fillRect(
+          ...pad.size.map(c => -c * 0.5),
+          ...pad.size);
+      } else if (pad.shape == "oval") {
+        drawOblong(ctx, scalefactor, padcolor, pad.size)
+      } else if (pad.shape == "circle") {
+        ctx.beginPath();
+        ctx.arc(0, 0, pad.size[0] / 2, 0, 2 * Math.PI);
+        ctx.fill();
+      } else if (pad.shape == "roundrect") {
+        drawRoundRect(ctx, scalefactor, padcolor, pad.size, pad.radius)
+      } else if (pad.shape == "custom") {
+        drawPolygons(ctx, scalefactor, padcolor, pad.polygons)
+      }
+      if (pad.type == "th") {
+        if (pad.drillshape == "oblong") {
+          drawOblong(ctx, scalefactor, "#CCCCCC", pad.drillsize)
+        } else {
+          ctx.fillStyle = "#CCCCCC"
+          ctx.beginPath();
+          ctx.arc(0, 0, pad.drillsize[0] / 2, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+  }
+}
+
+function drawEdges(canvas, scalefactor) {
+  var ctx = canvas.getContext("2d");
+  var edgecolor = getComputedStyle(topmostdiv).getPropertyValue('--pcb-edge-color');
+  for (edge of pcbdata.edges) {
+    drawedge(ctx, scalefactor, edge, edgecolor);
+  }
+}
+
+function drawModules(canvas, layer, scalefactor, highlightedRefs) {
+  var ctx = canvas.getContext("2d");
+  for (i in pcbdata.modules) {
+    var mod = pcbdata.modules[i];
+    var highlight = highlightedRefs.includes(mod.ref);
+    if (highlightedRefs.length == 0 || highlight) {
+      drawModule(ctx, layer, scalefactor, mod, highlight);
+    }
+  }
+}
+
+function drawSilkscreen(canvas, layer, scalefactor) {
+  var ctx = canvas.getContext("2d");
+  for (d of pcbdata.silkscreen[layer]) {
+    if (["segment", "arc", "circle"].includes(d.type)) {
+      drawedge(ctx, scalefactor, d, "#aa4");
+    } else if (d.type == "polygon") {
+      drawPolygonShape(ctx, scalefactor, d, "#4aa");
+    } else {
+      drawtext(ctx, scalefactor, d, "#4aa", layer == "B");
+    }
+  }
+}
+
+function clearCanvas(canvas) {
+  var ctx = canvas.getContext("2d");
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.restore();
+}
+
+function drawHighlightsOnLayer(canvasdict) {
+  clearCanvas(canvasdict.highlight);
+  drawModules(canvasdict.highlight, canvasdict.layer,
+    canvasdict.transform.s, highlightedRefs);
+}
+
+function drawHighlights() {
+  drawHighlightsOnLayer(allcanvas.front);
+  drawHighlightsOnLayer(allcanvas.back);
+}
+
+function drawBackground(canvasdict) {
+  clearCanvas(canvasdict.bg);
+  clearCanvas(canvasdict.silk);
+  drawEdges(canvasdict.bg, canvasdict.transform.s);
+  drawModules(canvasdict.bg, canvasdict.layer, canvasdict.transform.s, []);
+  drawSilkscreen(canvasdict.silk, canvasdict.layer, canvasdict.transform.s);
+}
+
+function prepareCanvas(canvas, flip, transform) {
+  var ctx = canvas.getContext("2d");
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  fontsize = 1.55;
+  ctx.font = "bold " + fontsize + "px Consolas,\"DejaVu Sans Mono\",Monaco,monospace";
+  ctx.textBaseline = "middle";
+  ctx.scale(transform.zoom, transform.zoom);
+  ctx.translate(transform.panx, transform.pany);
+  if (flip) {
+    ctx.scale(-1, 1);
+  }
+  ctx.translate(transform.x, transform.y);
+  ctx.scale(transform.s, transform.s);
+}
+
+function prepareLayer(canvasdict) {
+  var flip = (canvasdict.layer == "B");
+  for (c of ["bg", "silk", "highlight"]) {
+    prepareCanvas(canvasdict[c], flip, canvasdict.transform);
+  }
+}
+
+function recalcLayerScale(canvasdict) {
+  canvasdivid = {
+    "F": "frontcanvas",
+    "B": "backcanvas"
+  }[canvasdict.layer];
+  var width = document.getElementById(canvasdivid).clientWidth * 2;
+  var height = document.getElementById(canvasdivid).clientHeight * 2;
+  var bbox = pcbdata.edges_bbox;
+  var scalefactor = 0.98 * Math.min(
+    width / (bbox.maxx - bbox.minx),
+    height / (bbox.maxy - bbox.miny)
+  );
+  if (scalefactor < 0.1) {
+    scalefactor = 1;
+  }
+  canvasdict.transform.s = scalefactor;
+  var flip = (canvasdict.layer == "B");
+  if (flip) {
+    canvasdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor + width) * 0.5;
+  } else {
+    canvasdict.transform.x = -((bbox.maxx + bbox.minx) * scalefactor - width) * 0.5;
+  }
+  canvasdict.transform.y = -((bbox.maxy + bbox.miny) * scalefactor - height) * 0.5;
+  for (c of ["bg", "silk", "highlight"]) {
+    canvas = canvasdict[c];
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.width = (width / 2) + "px";
+    canvas.style.height = (height / 2) + "px";
+  }
+  console.log("Scale factor " + canvasdivid + ": ", canvasdict.transform);
+}
+
+function redrawCanvas(layerdict) {
+  prepareLayer(layerdict);
+  drawBackground(layerdict);
+  drawHighlights(layerdict);
+}
+
+function resizeCanvas(layerdict) {
+  recalcLayerScale(layerdict);
+  redrawCanvas(layerdict);
+}
+
+function resizeAll() {
+  resizeCanvas(allcanvas.front);
+  resizeCanvas(allcanvas.back);
+}
+
+function bboxScan(layer, x, y) {
+  var result = [];
+  for (var i in pcbdata.modules) {
+    var module = pcbdata.modules[i];
+    if (module.layer == layer) {
+      var b = module.bbox;
+      if (b.pos[0] <= x && b.pos[0] + b.size[0] >= x &&
+        b.pos[1] <= y && b.pos[1] + b.size[1] >= y) {
+        result.push(module.ref);
+      }
+    }
+  }
+  return result;
+}
+
+function handleMouseDown(e, layerdict) {
+  if (e.which != 1) {
+    return;
+  }
+  e.preventDefault();
+  e.stopPropagation();
+  layerdict.transform.mousestartx = e.offsetX;
+  layerdict.transform.mousestarty = e.offsetY;
+  layerdict.transform.mousedownx = e.offsetX;
+  layerdict.transform.mousedowny = e.offsetY;
+  layerdict.transform.mousedown = true;
+}
+
+function handleMouseClick(e, layerdict) {
+  var x = e.offsetX;
+  var y = e.offsetY;
+  var t = layerdict.transform;
+  if (layerdict.layer == "B") {
+    x = (2 * x / t.zoom - t.panx + t.x) / -t.s;
+  } else {
+    x = (2 * x / t.zoom - t.panx - t.x) / t.s;
+  }
+  y = (2 * y / t.zoom - t.y - t.pany) / t.s;
+  var reflist = bboxScan(layerdict.layer, x, y);
+  if (reflist.length > 0) {
+    modulesClicked(reflist);
+  }
+}
+
+function handleMouseUp(e, layerdict) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (e.which == 1 &&
+    layerdict.transform.mousedown &&
+    layerdict.transform.mousedownx == e.offsetX &&
+    layerdict.transform.mousedowny == e.offsetY) {
+    // This is just a click
+    handleMouseClick(e, layerdict);
+  }
+  layerdict.transform.mousedown = false;
+  if (e.which == 3) {
+    // Reset pan and zoom on right click.
+    layerdict.transform.panx = 0;
+    layerdict.transform.pany = 0;
+    layerdict.transform.zoom = 1;
+  }
+  redrawCanvas(layerdict);
+}
+
+function handleMouseMove(e, layerdict) {
+  if (!layerdict.transform.mousedown) {
+    return;
+  }
+  e.preventDefault();
+  e.stopPropagation();
+  dx = e.offsetX - layerdict.transform.mousestartx;
+  dy = e.offsetY - layerdict.transform.mousestarty;
+  layerdict.transform.panx += 2 * dx / layerdict.transform.zoom;
+  layerdict.transform.pany += 2 * dy / layerdict.transform.zoom;
+  layerdict.transform.mousestartx = e.offsetX;
+  layerdict.transform.mousestarty = e.offsetY;
+  if (redrawOnDrag) {
+    redrawCanvas(layerdict);
+  }
+}
+
+function handleMouseWheel(e, layerdict) {
+  e.preventDefault();
+  e.stopPropagation();
+  var t = layerdict.transform;
+  var wheeldelta = e.deltaY;
+  if (e.deltaMode == 1) {
+    // FF only, scroll by lines
+    wheeldelta *= 30;
+  } else if (e.deltaMode == 2) {
+    wheeldelta *= 300;
+  }
+  var m = Math.pow(1.1, -wheeldelta / 40);
+  // Limit amount of zoom per tick.
+  if (m > 2) {
+    m = 2;
+  } else if (m < 0.5) {
+    m = 0.5;
+  }
+  t.zoom *= m;
+  var zoomd = (1 - m) / t.zoom;
+  t.panx += 2 * e.offsetX * zoomd;
+  t.pany += 2 * e.offsetY * zoomd;
+  redrawCanvas(layerdict);
+  console.log(layerdict.transform.zoom);
+}
+
+function addMouseHandlers(div, layerdict) {
+  div.onmousedown = function(e) {
+    handleMouseDown(e, layerdict);
+  };
+  div.onmousemove = function(e) {
+    handleMouseMove(e, layerdict);
+  };
+  div.onmouseup = function(e) {
+    handleMouseUp(e, layerdict);
+  };
+  div.onmouseout = function(e) {
+    handleMouseUp(e, layerdict);
+  }
+  div.onwheel = function(e) {
+    handleMouseWheel(e, layerdict);
+  }
+  for (element of [div, layerdict.bg, layerdict.silk, layerdict.highlight]) {
+    element.addEventListener("contextmenu", function(e) {
+      e.preventDefault();
+    }, false);
+  }
+}
+
+function setRedrawOnDrag(value) {
+  redrawOnDrag = value;
+  writeStorage("redrawOnDrag", value);
+}
+
+function initRender() {
+  allcanvas = {
+    front: {
+      transform: {
+        x: 0,
+        y: 0,
+        s: 1,
+        panx: 0,
+        pany: 0,
+        zoom: 1,
+        mousestartx: 0,
+        mousestarty: 0,
+        mousedown: false,
+      },
+      bg: document.getElementById("F_bg"),
+      silk: document.getElementById("F_slk"),
+      highlight: document.getElementById("F_hl"),
+      layer: "F",
+    },
+    back: {
+      transform: {
+        x: 0,
+        y: 0,
+        s: 1,
+        panx: 0,
+        pany: 0,
+        zoom: 1,
+        mousestartx: 0,
+        mousestarty: 0,
+        mousedown: false,
+      },
+      bg: document.getElementById("B_bg"),
+      silk: document.getElementById("B_slk"),
+      highlight: document.getElementById("B_hl"),
+      layer: "B",
+    }
+  };
+  addMouseHandlers(document.getElementById("frontcanvas"), allcanvas.front);
+  addMouseHandlers(document.getElementById("backcanvas"), allcanvas.back);
+}
+
+///////////////////////////////////////////////
+
+///////////////////////////////////////////////
+/* DOM manipulation and misc code */
+
+var storagePrefix = 'KiCad_HTML_BOM__' + pcbdata.metadata.title + '__' +
+  pcbdata.metadata.revision + '__';
+var bomsplit;
+var canvassplit;
+var canvaslayout = "default";
+var bomlayout = "default";
+var currentHighlightedRowId;
+var highlightHandlers = [];
+var highlightedRefs = [];
+var checkboxes = [];
+var bomCheckboxes = "";
+var storage;
+var lastClickedRef;
+
+function initStorage(key) {
+  try {
+    window.localStorage.getItem("blank");
+    storage = window.localStorage;
+  } catch (e) {
+    // localStorage not available
+  }
+  if (!storage) {
+    try {
+      window.sessionStorage.getItem("blank");
+      storage = window.sessionStorage;
+    } catch (e) {
+      // sessionStorage also not available
+    }
+  }
+}
+
+function readStorage(key) {
+  if (storage) {
+    return storage.getItem(storagePrefix + '#' + key);
+  } else {
+    return null;
+  }
+}
+
+function writeStorage(key, value) {
+  if (storage) {
+    storage.setItem(storagePrefix + '#' + key, value);
+  }
+}
+
+function dbg(html) {
+  dbgdiv.innerHTML = html;
+}
+
+function setDarkMode(value) {
+  if (value) {
+    topmostdiv.classList.add("dark");
+  } else {
+    topmostdiv.classList.remove("dark");
+  }
+  writeStorage("darkmode", value);
+  redrawCanvas(allcanvas.front);
+  redrawCanvas(allcanvas.back);
+}
+
+function getStoredCheckboxRefs(checkbox) {
+  existingRefs = readStorage("checkbox_" + checkbox);
+  if (!existingRefs) {
+    refsSet = new Set();
+  } else {
+    refsSet = new Set(existingRefs.split(","));
+  }
+  return refsSet;
+}
+
+function setBomCheckboxState(checkbox, element, references) {
+  var storedRefsSet = getStoredCheckboxRefs(checkbox);
+  var currentRefsSet = new Set(references);
+  // Get difference of current - stored
+  var difference = new Set(currentRefsSet);
+  for (ref of storedRefsSet) {
+    difference.delete(ref);
+  }
+  if (difference.size == 0) {
+    // All the current refs are stored
+    element.checked = true;
+  } else if (difference.size == currentRefsSet.size) {
+    // None of the current refs are stored
+    element.checked = false;
+  } else {
+    // Some of the refs are stored
+    element.checked = false;
+    element.indeterminate = true;
+  }
+}
+
+function createCheckboxChangeHandler(checkbox, references) {
+  return function() {
+    refsSet = getStoredCheckboxRefs(checkbox);
+    if (this.checked) {
+      // checkbox ticked
+      for (ref of references) {
+        refsSet.add(ref);
+      }
+    } else {
+      // checkbox unticked
+      for (ref of references) {
+        refsSet.delete(ref);
+      }
+    }
+    writeStorage("checkbox_" + checkbox, [...refsSet].join(","));
+  }
+}
+
+function createRowHighlightHandler(rowid, refs) {
+  return function() {
+    if (currentHighlightedRowId) {
+      if (currentHighlightedRowId == rowid) {
+        return;
+      }
+      document.getElementById(currentHighlightedRowId).classList.remove("highlighted");
+    }
+    document.getElementById(rowid).classList.add("highlighted");
+    currentHighlightedRowId = rowid;
+    highlightedRefs = refs;
+    drawHighlights();
+  }
+}
+
+function entryMatches(entry) {
+  // check refs
+  for (ref of entry[3]) {
+    if (ref.toLowerCase().indexOf(filter) >= 0) {
+      return true;
+    }
+  }
+  // check value
+  if (entry[1].toLowerCase().indexOf(filter) >= 0) {
+    return true;
+  }
+  // check footprint
+  if (entry[2].toLowerCase().indexOf(filter) >= 0) {
+    return true;
+  }
+  return false;
+}
+
+function findRefInEntry(entry) {
+  for (ref of entry[3]) {
+    if (ref.toLowerCase() == reflookup) {
+      return [ref];
+    }
+  }
+  return false;
+}
+
+function highlightFilter(s) {
+  if (!filter) {
+    return s;
+  }
+  var parts = s.toLowerCase().split(filter);
+  if (parts.length == 1) {
+    return s;
+  }
+  var r = "";
+  var pos = 0;
+  for (var i in parts) {
+    if (i > 0) {
+      r += '<mark class="highlight">' +
+        s.substring(pos, pos + filter.length) +
+        '</mark>';
+      pos += filter.length;
+    }
+    r += s.substring(pos, pos + parts[i].length);
+    pos += parts[i].length;
+  }
+  return r;
+}
+
+function populateBomHeader() {
+  var tr = document.createElement("TR");
+  var td = document.createElement("TH");
+  td.classList.add("numCol");
+  tr.appendChild(td);
+  checkboxes = bomCheckboxes.split(",");
+  for (checkbox of checkboxes) {
+    if (checkbox) {
+      td = document.createElement("TH");
+      td.classList.add("bom-checkbox");
+      td.innerHTML = checkbox;
+      tr.appendChild(td);
+    }
+  }
+  td = document.createElement("TH");
+  td.classList.add("References");
+  td.innerHTML = "References";
+  tr.appendChild(td);
+  td = document.createElement("TH");
+  td.classList.add("Value");
+  td.innerHTML = "Value";
+  tr.appendChild(td);
+  td = document.createElement("TH");
+  td.classList.add("Footprint");
+  td.innerHTML = "Footprint";
+  tr.appendChild(td);
+  td = document.createElement("TH");
+  td.classList.add("Quantity");
+  td.innerHTML = "Quantity";
+  tr.appendChild(td);
+  bomhead.appendChild(tr);
+}
+
+function populateBomBody() {
+  highlightHandlers = [];
+  currentHighlightedRowId = null;
+  var first = true;
+  switch (canvaslayout) {
+    case 'F':
+      bomtable = pcbdata.bom.F;
+      break;
+    case 'FB':
+      bomtable = pcbdata.bom.both;
+      break;
+    case 'B':
+      bomtable = pcbdata.bom.B;
+      break;
+  }
+  for (var i in bomtable) {
+    var bomentry = bomtable[i];
+    if (filter && !entryMatches(bomentry)) {
+      continue;
+    }
+    references = bomentry[3];
+    if (reflookup) {
+      references = findRefInEntry(bomentry);
+      if (!references) {
+        continue;
+      }
+    }
+    var tr = document.createElement("TR");
+    var td = document.createElement("TD");
+    var rownum = +i + 1;
+    tr.id = "bomrow" + rownum;
+    td.textContent = rownum;
+    tr.appendChild(td);
+    // Checkboxes
+    for (checkbox of checkboxes) {
+      if (checkbox) {
+        td = document.createElement("TD");
+        input = document.createElement("input");
+        input.type = "checkbox";
+        input.onchange = createCheckboxChangeHandler(checkbox, references);
+        setBomCheckboxState(checkbox, input, references);
+        td.appendChild(input);
+        tr.appendChild(td);
+      }
+    }
+    // References
+    td = document.createElement("TD");
+    td.innerHTML = highlightFilter(references.join(", "));
+    tr.appendChild(td);
+    // Value
+    td = document.createElement("TD");
+    td.innerHTML = highlightFilter(bomentry[1]);
+    tr.appendChild(td);
+    // Footprint
+    td = document.createElement("TD");
+    td.innerHTML = highlightFilter(bomentry[2]);
+    tr.appendChild(td);
+    // Quantity
+    td = document.createElement("TD");
+    td.textContent = bomentry[3].length;
+    tr.appendChild(td);
+    bom.appendChild(tr);
+    var handler = createRowHighlightHandler(tr.id, references);
+    tr.onmousemove = handler;
+    highlightHandlers.push({
+      id: tr.id,
+      handler: handler,
+      refs: references
+    });
+    if ((filter || reflookup) && first) {
+      highlightedRefs = references;
+      drawHighlights();
+      first = false;
+    }
+  }
+}
+
+function smoothScrollToRow(rowid) {
+  document.getElementById(rowid).scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+    inline: "nearest"
+  });}
+
+function highlightPreviousRow() {
+  if (!currentHighlightedRowId) {
+    highlightHandlers[highlightHandlers.length - 1].handler();
+  } else {
+    if (highlightHandlers.length > 1 &&
+      highlightHandlers[0].id == currentHighlightedRowId) {
+      highlightHandlers[highlightHandlers.length - 1].handler();
+    } else {
+      for (var i = 0; i < highlightHandlers.length - 1; i++) {
+        if (highlightHandlers[i + 1].id == currentHighlightedRowId) {
+          highlightHandlers[i].handler();
+          break;
+        }
+      }
+    }
+  }
+  smoothScrollToRow(currentHighlightedRowId);
+}
+
+function highlightNextRow() {
+  if (!currentHighlightedRowId) {
+    highlightHandlers[0].handler();
+  } else {
+    if (highlightHandlers.length > 1 &&
+      highlightHandlers[highlightHandlers.length - 1].id == currentHighlightedRowId) {
+      highlightHandlers[0].handler();
+    } else {
+      for (var i = 1; i < highlightHandlers.length; i++) {
+        if (highlightHandlers[i - 1].id == currentHighlightedRowId) {
+          highlightHandlers[i].handler();
+          break;
+        }
+      }
+    }
+  }
+  smoothScrollToRow(currentHighlightedRowId);
+}
+
+function populateBomTable() {
+  while (bom.firstChild) {
+    bom.removeChild(bom.firstChild);
+  }
+  while (bomhead.firstChild) {
+    bomhead.removeChild(bomhead.firstChild);
+  }
+  populateBomHeader();
+  populateBomBody();
+}
+
+function modulesClicked(references) {
+  var lastClickedIndex = references.indexOf(lastClickedRef);
+  var ref = references[(lastClickedIndex + 1) % references.length];
+  for (var handler of highlightHandlers) {
+    if (handler.refs.indexOf(ref) >= 0) {
+      lastClickedRef = ref;
+      handler.handler();
+      smoothScrollToRow(currentHighlightedRowId);
+      break;
+    }
+  }
+}
+
+function updateFilter(input) {
+  filter = input.toLowerCase();
+  populateBomTable();
+}
+
+function updateRefLookup(input) {
+  reflookup = input.toLowerCase();
+  populateBomTable();
+}
+
+function silkscreenVisible(visible) {
+  if (visible) {
+    allcanvas.front.silk.style.display = "";
+    allcanvas.back.silk.style.display = "";
+    writeStorage("silkscreenVisible", true);
+  } else {
+    allcanvas.front.silk.style.display = "none";
+    allcanvas.back.silk.style.display = "none";
+    writeStorage("silkscreenVisible", false);
+  }
+}
+
+function changeCanvasLayout(layout) {
+  document.getElementById("fl-btn").classList.remove("depressed");
+  document.getElementById("fb-btn").classList.remove("depressed");
+  document.getElementById("bl-btn").classList.remove("depressed");
+  switch (layout) {
+    case 'F':
+      document.getElementById("fl-btn").classList.add("depressed");
+      if (bomlayout != "BOM") {
+        canvassplit.collapse(1);
+      }
+      break;
+    case 'B':
+      document.getElementById("bl-btn").classList.add("depressed");
+      if (bomlayout != "BOM") {
+        canvassplit.collapse(0);
+      }
+      break;
+    default:
+      document.getElementById("fb-btn").classList.add("depressed");
+      if (bomlayout != "BOM") {
+        canvassplit.setSizes([50, 50]);
+      }
+  }
+  canvaslayout = layout;
+  writeStorage("canvaslayout", layout);
+  resizeAll();
+  populateBomTable();
+}
+
+function populateMetadata() {
+  document.getElementById("title").innerHTML = pcbdata.metadata.title;
+  document.getElementById("revision").innerHTML = "Rev: " + pcbdata.metadata.revision;
+  document.getElementById("company").innerHTML = pcbdata.metadata.company;
+  document.getElementById("filedate").innerHTML = pcbdata.metadata.date;
+  if (pcbdata.metadata.title != "") {
+    document.title = pcbdata.metadata.title + " BOM";
+  }
+}
+
+function changeBomLayout(layout) {
+  document.getElementById("bom-btn").classList.remove("depressed");
+  document.getElementById("lr-btn").classList.remove("depressed");
+  document.getElementById("tb-btn").classList.remove("depressed");
+  switch (layout) {
+    case 'BOM':
+      document.getElementById("bom-btn").classList.add("depressed");
+      if (bomsplit) {
+        bomsplit.destroy();
+        bomsplit = null;
+        canvassplit.destroy();
+        canvassplit = null;
+      }
+      document.getElementById("frontcanvas").style.display = "none";
+      document.getElementById("backcanvas").style.display = "none";
+      document.getElementById("bot").style.height = "";
+      break;
+    case 'TB':
+      document.getElementById("tb-btn").classList.add("depressed");
+      document.getElementById("frontcanvas").style.display = "";
+      document.getElementById("backcanvas").style.display = "";
+      document.getElementById("bot").style.height = "calc(100% - 80px)";
+      document.getElementById("bomdiv").classList.remove("split-horizontal");
+      document.getElementById("canvasdiv").classList.remove("split-horizontal");
+      document.getElementById("frontcanvas").classList.add("split-horizontal");
+      document.getElementById("backcanvas").classList.add("split-horizontal");
+      if (bomsplit) {
+        bomsplit.destroy();
+        bomsplit = null;
+        canvassplit.destroy();
+        canvassplit = null;
+      }
+      bomsplit = Split(['#bomdiv', '#canvasdiv'], {
+        sizes: [50, 50],
+        onDragEnd: resizeAll,
+        direction: "vertical",
+        gutterSize: 5
+      });
+      canvassplit = Split(['#frontcanvas', '#backcanvas'], {
+        sizes: [50, 50],
+        gutterSize: 5,
+        onDragEnd: resizeAll
+      });
+      break;
+    case 'LR':
+      document.getElementById("lr-btn").classList.add("depressed");
+      document.getElementById("frontcanvas").style.display = "";
+      document.getElementById("backcanvas").style.display = "";
+      document.getElementById("bot").style.height = "calc(100% - 80px)";
+      document.getElementById("bomdiv").classList.add("split-horizontal");
+      document.getElementById("canvasdiv").classList.add("split-horizontal");
+      document.getElementById("frontcanvas").classList.remove("split-horizontal");
+      document.getElementById("backcanvas").classList.remove("split-horizontal");
+      if (bomsplit) {
+        bomsplit.destroy();
+        bomsplit = null;
+        canvassplit.destroy();
+        canvassplit = null;
+      }
+      bomsplit = Split(['#bomdiv', '#canvasdiv'], {
+        sizes: [50, 50],
+        onDragEnd: resizeAll,
+        gutterSize: 5
+      });
+      canvassplit = Split(['#frontcanvas', '#backcanvas'], {
+        sizes: [50, 50],
+        gutterSize: 5,
+        direction: "vertical",
+        onDragEnd: resizeAll
+      });
+  }
+  bomlayout = layout;
+  writeStorage("bomlayout", layout);
+  changeCanvasLayout(canvaslayout);
+}
+
+function focusInputField(input) {
+  input.scrollIntoView(false);
+  input.focus();
+  input.select();
+}
+
+function focusFilterField() {
+  focusInputField(document.getElementById("filter"));
+}
+
+function focusRefLookupField() {
+  focusInputField(document.getElementById("reflookup"));
+}
+
+function toggleBomCheckbox(bomrowid, checkboxnum) {
+  if (!bomrowid || checkboxnum > checkboxes.length) {
+    return;
+  }
+  var bomrow = document.getElementById(bomrowid);
+  var checkbox = bomrow.childNodes[checkboxnum].childNodes[0];
+  checkbox.checked = !checkbox.checked;
+  checkbox.indeterminate = false;
+  checkbox.onchange();
+}
+
+function removeGutterNode(node) {
+  for (var i = 0; i < node.childNodes.length; i++) {
+    if (node.childNodes[i].classList &&
+      node.childNodes[i].classList.contains("gutter")) {
+      node.removeChild(node.childNodes[i]);
+      break;
+    }
+  }
+}
+
+function cleanGutters() {
+  removeGutterNode(document.getElementById("bot"));
+  removeGutterNode(document.getElementById("canvasdiv"));
+}
+
+function setBomCheckboxes(value) {
+  bomCheckboxes = value;
+  writeStorage("bomCheckboxes", value);
+  populateBomTable();
+}
+
+document.onkeydown = function(e) {
+  switch (e.key) {
+    case "ArrowUp":
+      highlightPreviousRow();
+      e.preventDefault();
+      break;
+    case "ArrowDown":
+      highlightNextRow();
+      e.preventDefault();
+      break;
+    default:
+      break;
+  }
+  if (e.altKey) {
+    switch (e.key) {
+      case "f":
+        focusFilterField();
+        e.preventDefault();
+        break;
+      case "r":
+        focusRefLookupField();
+        e.preventDefault();
+        break;
+      case "z":
+        changeBomLayout("BOM");
+        e.preventDefault();
+        break;
+      case "x":
+        changeBomLayout("LR");
+        e.preventDefault();
+        break;
+      case "c":
+        changeBomLayout("TB");
+        e.preventDefault();
+        break;
+      case "v":
+        changeCanvasLayout("F");
+        e.preventDefault();
+        break;
+      case "b":
+        changeCanvasLayout("FB");
+        e.preventDefault();
+        break;
+      case "n":
+        changeCanvasLayout("B");
+        e.preventDefault();
+        break;
+      default:
+        break;
+    }
+    if (e.key >= '1' && e.key <= '9') {
+      toggleBomCheckbox(currentHighlightedRowId, parseInt(e.key));
+    }
+  }
+}
+
+window.onload = function(e) {
+  initStorage();
+  cleanGutters();
+  initRender();
+  dbgdiv = document.getElementById("dbg");
+  bom = document.getElementById("bombody");
+  bomhead = document.getElementById("bomhead");
+  bomlayout = readStorage("bomlayout");
+  if (!bomlayout) {
+    bomlayout = "LR";
+  }
+  canvaslayout = readStorage("canvaslayout");
+  if (!canvaslayout) {
+    canvaslayout = "FB";
+  }
+  filter = "";
+  reflookup = "";
+  populateMetadata();
+  bomCheckboxes = readStorage("bomCheckboxes");
+  if (bomCheckboxes === null) {
+    bomCheckboxes = "Sourced,Placed";
+  }
+  document.getElementById("bomCheckboxes").value = bomCheckboxes;
+  if (readStorage("silkscreenVisible") === "false") {
+    document.getElementById("silkscreenCheckbox").checked = false;
+    silkscreenVisible(false);
+  }
+  if (readStorage("redrawOnDrag") === "false") {
+    document.getElementById("dragCheckbox").checked = false;
+    setRedrawOnDrag(false);
+  }
+  if (readStorage("darkmode") === "true") {
+    document.getElementById("darkmodeCheckbox").checked = true;
+    setDarkMode(true);
+  }
+  // Triggers render
+  changeBomLayout(bomlayout);
+}
+
+window.onresize = resizeAll;
+window.matchMedia("print").addListener(resizeAll);
+
+///////////////////////////////////////////////
+
+  </script>
+</head>
+
+<body>
+<div id="topmostdiv" style="width: 100%; height: 100%">
+  <div id="top">
+    <div style="float: right;">
+      <div class="hideonprint menu" style="float: right; margin: 10px; top: 8px;">
+        <button class="menubtn"></button>
+        <div class="menu-content">
+          <label class="menu-label menu-label-top">
+            <input id="darkmodeCheckbox" type="checkbox" onchange="setDarkMode(this.checked)">
+            Dark mode
+          </label>
+          <label class="menu-label">
+            <input id="silkscreenCheckbox" type="checkbox" checked onchange="silkscreenVisible(this.checked)">
+            Show silkscreen
+          </label>
+          <label class="menu-label">
+            <input id="dragCheckbox" type="checkbox" checked onchange="setRedrawOnDrag(this.checked)">
+            Continuous redraw on drag
+          </label>
+          <label class="menu-label">
+            <div style="margin-left: 5px">Bom checkboxes</div>
+            <input id="bomCheckboxes" class="menu-textbox" type=text
+                   oninput="setBomCheckboxes(this.value)">
+          </label>
+        </div>
+      </div>
+      <div class="button-container hideonprint"
+           style="float: right; margin: 10px; position: relative; top: 8px">
+        <button id="fl-btn" class="left-most-button" onclick="changeCanvasLayout('F')"
+                title="Front only">F
+        </button>
+        <button id="fb-btn" class="middle-button" onclick="changeCanvasLayout('FB')"
+                title="Front and Back">FB
+        </button>
+        <button id="bl-btn" class="right-most-button" onclick="changeCanvasLayout('B')"
+                title="Back only">B
+        </button>
+      </div>
+      <div class="button-container hideonprint"
+           style="float: right; margin: 10px; position: relative; top: 8px">
+        <button id="bom-btn" class="left-most-button" onclick="changeBomLayout('BOM')"
+                title="BOM only"></button>
+        <button id="lr-btn" class="middle-button" onclick="changeBomLayout('LR')"
+                title="BOM left, drawings right"></button>
+        <button id="tb-btn" class="right-most-button" onclick="changeBomLayout('TB')"
+                title="BOM top, drawings bot"></button>
+      </div>
+    </div>
+    <div id="fileinfodiv" style="overflow: auto;">
+      <table class="fileinfo">
+        <tbody>
+          <tr>
+            <td id="title" class="title" style="width: 70%">
+              Title
+            </td>
+            <td id="revision" class="title" style="width: 30%">
+              Revision
+            </td>
+          </tr>
+          <tr>
+            <td id="company">
+              Kicad version
+            </td>
+            <td id="filedate">
+              Date
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div id="bot" class="split" style="height: calc(100% - 80px)">
+    <div id="bomdiv" class="split split-horizontal">
+      <div style="width: 100%">
+        <input id="reflookup" class="searchbox reflookup hideonprint" type="text" placeholder="Ref lookup"
+               oninput="updateRefLookup(this.value)">
+        <input id="filter" class="searchbox filter hideonprint" type="text" placeholder="Filter"
+               oninput="updateFilter(this.value)">
+      </div>
+      <div id="dbg"></div>
+      <table class="bom">
+        <thead id="bomhead">
+        </thead>
+        <tbody id="bombody">
+        </tbody>
+      </table>
+    </div>
+    <div id="canvasdiv" class="split split-horizontal">
+      <div id="frontcanvas" class="split" style="overflow: hidden">
+        <div style="position: relative; width: 100%; height: 100%;">
+          <canvas id="F_bg" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+          <canvas id="F_slk" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+          <canvas id="F_hl" style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+        </div>
+      </div>
+      <div id="backcanvas" class="split" style="overflow: hidden">
+        <div style="position: relative; width: 100%; height: 100%;">
+          <canvas id="B_bg" style="position: absolute; left: 0; top: 0; z-index: 0;"></canvas>
+          <canvas id="B_slk" style="position: absolute; left: 0; top: 0; z-index: 1;"></canvas>
+          <canvas id="B_hl" style="position: absolute; left: 0; top: 0; z-index: 2;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+
+</html>

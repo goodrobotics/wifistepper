@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name wifistepper-rescue)(type Legacy)(uri ${KIPRJMOD}/wifistepper-rescue.lib)(options "")(descr ""))
+)

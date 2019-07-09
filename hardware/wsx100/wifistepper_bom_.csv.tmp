@@ -1,0 +1,54 @@
+Component,Description,Part,References,Value,Footprint,Quantity Per PCB,Datasheet
+1,Unpolarized capacitor,C,C5 C12 C14 C16 C17 C21 C22 C24,0.1uF,C_0603_1608Metric,8,~
+2,Unpolarized capacitor,C,C15 C20,10uF,C_0805_2012Metric,2,~
+3,Unpolarized capacitor,C,C19 C23,1uF,C_0603_1608Metric,2,~
+4,Unpolarized capacitor,C,C18,1uF 100V,C_1206_3216Metric,1,~
+5,Unpolarized capacitor,C,C4,220nF,C_0805_2012Metric,1,~
+6,Unpolarized capacitor,C,C6 C7 C8 C9,220nF 100V,C_0805_2012Metric,4,~
+7,Polarized capacitor,CP,C1,22uF,C_1206_3216Metric,1,~
+8,Unpolarized capacitor,C,C2 C3,470nF 100V,C_0805_2012Metric,2,~
+9,Unpolarized capacitor,C,C13,47nF 100V,C_0805_2012Metric,1,~
+10,Polarized capacitor,CP,C10 C11,68uF 100V,CP_Radial_D12.5mm_P5.00mm,2,~
+11,Schottky diode,D_Schottky,D2,D_Schottky,D_SOD-123,1,~
+12,"Dual Schottky diode, anode/cathode/center",D_Schottky_x2_Serial_AKC,D1,D_Schottky_x2_Serial_AKC,SOT-23,1,~
+13,Light emitting diode,LED,D3,LED GRN,D_0805_2012Metric,1,~
+14,Light emitting diode,LED,D5,LED RED,D_0805_2012Metric,1,~
+15,Light emitting diode,LED,D4,LED YEL,D_0805_2012Metric,1,~
+16,Diode,D,D0,RPOL,D_SOD80,1,~
+17,DC Barrel Jack with an internal switch,Barrel_Jack_Switch,J1,Barrel_Jack_Switch,BarrelJack_Horizontal,1,~
+18,"Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)",Conn_01x02,J5,Conn_01x02,PinHeader_1x02_P2.54mm_Vertical,1,~
+19,"Generic connector, single row, 01x09, script generated (kicad-library-utils/schlib/autogen/connector/)",Conn_01x09,J3,Conn_01x09,PinHeader_1x09_P2.54mm_Vertical,1,~
+20,"Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)",Conn_01x10,J4,Conn_01x10,PinHeader_1x10_P2.54mm_Vertical,1,~
+21,"Generic screw terminal, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)",Screw_Terminal_01x06,J2,Screw_Terminal,"TerminalBlock_Phoenix_PT-1,5-6-5.0-H_1x06_P5.00mm_Horizontal",1,~
+22,"Jumper, 2-pole, open",Jumper_2_Open,JP1 JP2,Jumper_2_Open,STpowerSTEP01_JMP,2,~
+23,Inductor,L,L1,33uH,L_Taiyo-Yuden_NR-50xx,1,~
+24,Resistor,R,R1,-,R_0805_2012Metric_Pad1.15x1.40mm_HandSolder,1,~
+25,Resistor,R,R4,1.8K,R_0603_1608Metric,1,~
+26,Resistor,R,R12 R13,10K,R_0603_1608Metric,2,~
+27,Resistor,R,R6 R22,1K,R_0603_1608Metric,2,~
+28,Resistor,R,R5 R14 R15,2.2K,R_0603_1608Metric,3,~
+29,Resistor,R,R2 R16 R17 R18 R19 R20 R21 R23,22,R_0603_1608Metric,8,~
+30,Resistor,R,R9 R10 R11,330,R_0603_1608Metric,3,~
+31,Resistor,R,R7 R8,39K,R_0603_1608Metric,2,~
+32,Resistor,R,R3,47K,R_0603_1608Metric,1,~
+33,Resistor,R,RS1 RS2 RS3 RS4 RS5 RS6 RS7 RS8,0.27,R_2512_6332Metric,8,~
+34,Single Pole Single Throw (SPST) switch,SW_SPST,SW1,SW_SPST,TL3315NF100Q,1,
+35,,ATECC508A,U4,ATECC508A,SOIC-8_3.9x4.9mm_P1.27mm,1,
+36,,ESP-WROOM-02,U1,ESP-WROOM-02,ESP-WROOM-02,1,
+37,"60V, 300mA, synchronous step-down dc-dc converter, 3.3V fixed output voltage, DFN-8",MAX15062A,U3,MAX15062A,DFN-8_2x2mm_P0.5mm,1,http://datasheets.maximintegrated.com/en/ds/MAX15062.pdf
+38,,powerSTEP01,U2,powerSTEP01,powerSTEP01,1,
+
+
+
+
+
+Component Groups:,38
+Component Count:,74
+Fitted Components:,74
+Number of PCBs:,1
+Total components:,74
+Schematic Version:,
+Schematic Date:,
+BoM Date:,Mon 04 Feb 2019 04:28:14 PM PST
+Schematic Source:,/home/aklofas/Projects/wifistepper/hardware/wsx100/wifistepper.sch
+KiCad Version:,Eeschema 5.0.2-bee76a0~70~ubuntu16.04.1

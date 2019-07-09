@@ -321,6 +321,9 @@ void servicecfg_read(service_config * cfg) {
       if (root.containsKey("auth_enabled"))   cfg->auth.enabled = root["auth_enabled"].as<bool>();
       if (root.containsKey("auth_username"))  strlcpy(cfg->auth.username, root["auth_username"].as<char *>(), LEN_USERNAME);
       if (root.containsKey("auth_password"))  strlcpy(cfg->auth.password, root["auth_password"].as<char *>(), LEN_PASSWORD);
+      if (root.containsKey("lowcom_enabled")) cfg->lowcom.enabled = root["lowcom_enabled"].as<bool>();
+      if (root.containsKey("lowcom_std_enabled")) cfg->lowcom.std_enabled = root["lowcom_std_enabled"].as<bool>();
+      if (root.containsKey("lowcom_crypto_enabled")) cfg->lowcom.crypto_enabled = root["lowcom_crypto_enabled"].as<bool>();
       if (root.containsKey("mqtt_enabled"))   cfg->mqtt.enabled = root["mqtt_enabled"].as<bool>();
       if (root.containsKey("mqtt_server"))    strlcpy(cfg->mqtt.server, root["mqtt_server"].as<char *>(), LEN_URL);
       if (root.containsKey("mqtt_port"))      cfg->mqtt.port = root["mqtt_port"].as<int>();
@@ -347,6 +350,9 @@ void servicecfg_write(service_config * const cfg) {
   root["auth_enabled"] = cfg->auth.enabled;
   root["auth_username"] = cfg->auth.username;
   root["auth_password"] = cfg->auth.password;
+  root["lowcom_enabled"] = cfg->lowcom.enabled;
+  root["lowcom_std_enabled"] = cfg->lowcom.std_enabled;
+  root["lowcom_crypto_enabled"] = cfg->lowcom.crypto_enabled;
   root["mqtt_enabled"] = cfg->mqtt.enabled;
   root["mqtt_server"] = cfg->mqtt.server;
   root["mqtt_port"] = cfg->mqtt.port;
