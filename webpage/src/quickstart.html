@@ -868,6 +868,7 @@ layout: default
                 <div class="column is-one-third has-text-right">
                     <ul class="header-tabs">
                         <li><a v-bind:class="{'is-active': code.language == 'bash'}" v-on:click="code.language = 'bash'">Bash</a></li>
+						<li><a v-bind:class="{'is-active': code.language == 'powershell'}" v-on:click="code.language = 'powershell'">PowerShell</a></li>
                         <li><a v-bind:class="{'is-active': code.language == 'python'}" v-on:click="code.language = 'python'">Python</a></li>
                     </ul>
                 </div>
@@ -967,6 +968,104 @@ curl -sS "http://${HOST}/api/motor/state<template v-if="master">?target=${TARGET
 #   thermalshutdown, stalldetect }
 
 {% endraw %}</pre>
+<pre style="display: none;" id="code-powershell">{% raw %}
+# ================ EXAMPLE POWERSHELL CODE - Use chunks as needed ================
+# For full documentation see https://www.wifistepper.com/interfaces
+
+# Uses curl for network and jq for json parsing
+$Stepper="{{ service.hostname }}.local"  # or "{{ wifi.ip }}"<template v-if="master">
+$TARGET="{{ target }}"  # Daisy chain support</template>
+
+# Ping motor api
+Invoke-RestMethod -URI  "http://$Stepper/api/ping"
+# All successful api calls will return 'status: ok'. This means
+#  that the command was successfully interpreted and executed.
+#  However, errors may still be thrown during execution.
+
+# import wifiStepper module
+Import-Module wifistepper.psm1
+
+# Write motor configuration
+$MODE="{{ mode }}"
+$STEPSIZE="{{ stepsize }}"
+$OCD="{{ ocd }}"
+$OCDSHUTDOWN="{{ ocdshutdown }}"
+$MAXSPEED="{{ maxspeed }}"
+$MINSPEED="{{ minspeed }}"
+$ACCEL="{{ accel }}"
+$DECEL="{{ decel }}"
+<template v-if="mode == 'current'">$CM_KTHOLD="{{ cm_kthold }}"
+$CMKTRUN="{{ cm_ktrun }}"
+$CMKTACCEL="{{ cm_ktaccel }}"
+$CMKTDECEL="{{ cm_ktdecel }}"</template><template v-if="mode == 'voltage'">$VMKTHOLD="{{ vm_kthold }}"
+$VMKTRUN="{{ vm_ktrun }}"
+$VMKTACCEL="{{ vm_ktaccel }}"
+$VMKTDECEL="{{ vm_ktdecel }}"</template>
+$FSSPEED="{{ fsspeed }}"
+$FSBOOST="{{ fsboost }}"
+$REVERSE="{{ reverse }}"
+$SAVE="{{ save }}"
+
+# Advanced configuration settings
+<template v-if="mode == 'current'">$CM_SWITCHPERIOD="{{ cm_switchperiod }}"
+$CMPREDICT="{{ cm_predict }}"
+$CMMINON="{{ cm_minon }}"
+$CMMINOFF="{{ cm_minoff }}"
+$CMFASTOFF="{{ cm_fastoff }}"
+$CMFASTSTEP="{{ cm_faststep }}"</template><template v-if="mode == 'voltage'">$VMPWMFREQ="{{ vm_pwmfreq }}"
+$VMSTALL="{{ vm_stall }}"
+$VMVOLTCOMP="{{ vm_volt_comp }}"
+$VMBEMFSLOPEL="{{ vm_bemf_slopel }}"
+$VMBEMFSPEEDCO="{{ vm_bemf_speedco }}"
+$VMBEMFSLOPEHACC="{{ vm_bemf_slopehacc }}"
+$VMBEMFSLOPEHDEC="{{ vm_bemf_slopehdec }}"</template>
+
+Set-StepperConfig -Stepper $Stepper `
+-mode $MODE -stepsize $STEPSIZE `
+-ocd $OCD -ocdshutdown $OCDSHUTDOWN `
+-maxspeed $MAXSPEED -minspeed $MINSPEED -accel $ACCEL -decel $DECEL `
+<template v-if="mode == 'current'">-cmkthold $CMKTHOLD -cmktrun $CMKTRUN -cmktaccel=${CM_KTACCEL} -cmktdecel $CMKTDECEL `</template><template v-if="mode == 'voltage'">-vmkthold $VMKTHOLD -vmktrun $VMKTRUN -vmktaccel $VMKTACCEL -vmktdecel $VM_KTDECEL `</template>
+-fsspeed $FSSPEED -fsboost $FSBOOST`
+<template v-if="mode == 'current'">-cmswitchperiod $CMSWITCHPERIOD -cmpredict $CMPREDICT `
+-cmminon $CMMINON -cmminoff $CMMINOFF -cmfastoff $CMFASTOFF -cmfaststep $CMFASTSTEP `</template><template v-if="mode == 'voltage'">-vmpwmfreq $VMPWMFREQ -vmstall $VMSTALL -vmvoltcomp $VMVOLTCOMP`
+-vmbemfslopel $VMBEMFSLOPEL -vmbemfspeedco $VMBEMFSPEEDCO `
+-vmbemfslopehacc $VMBEMFSLOPEHACC -vmbemfslopehdec $VMBEMFSLOPEHDEC `</template>
+-reverse $REVERSE -save $SAVE <template v-if="master">-target $TARGET</template>
+
+# Read motor configuration
+Get-StepperConfig -Stepper $stepper <template v-if="master"> -target $TARGET</template>
+# Returns object with configuration map
+<template v-if="profile == 'servo'">
+# Zero position
+Invoke-RestMethod -URI "http://$HOST/api/motor/pos/reset<template v-if="master">?target=${TARGET}</template>" 
+
+# Send servo command
+ANGLE="{{ setangle }}"  
+# Note this reads the current Step Size from the Controller and Calculates the correct Position for the Angle.
+Move-StepperAngle -Stepper $HOST -Angle $ANGLE<template v-if="master"> -target=$TARGET</template>
+</template><template v-if="profile == 'speed'">
+# Send speed command
+$STEPS_PER_SEC="{{ setstepss }}"  # RPM / 60 * 200; RPM={{ setrpm }}
+$DIRECTION="{{ setdirection }}"
+Invoke-RestMethod -URI "http://$HOST/api/motor/run?stepss=$STEPS_PER_SEC&dir=$DIRECTION<template v-if="master">&target=$TARGET</template>" 
+</template><template v-if="profile == 'extstepclock'">
+# Send stepclock command
+$DIRECTION="{{ setdirection }}"
+Invoke-RestMethod -URI "http://$HOST/api/motor/stepclock?dir=$DIRECTION<template v-if="master">&target=$TARGET</template>"
+</template>
+# Emergency Stop
+$STOP_HIZ="{{ speed.hiz }}"
+$STOP_SOFT="true"
+Invoke-RestMethod -URI "http://$HOST/api/motor/estop?hiz=$STOP_HIZ&soft=$STOP_SOFT<template v-if="master">&target=$TARGET</template>" 
+
+# Read state
+Invoke-RestMethod -URI "http://$HOST/api/motor/state<template v-if="master">?target=$TARGET</template>"
+# Returns object with keys: busy, stepss, hiz, vin, pos, mark, dir, movement, stepclock, switch,
+#   flags: { switch, commanderror, overcurrent, undervoltage, thermalwarning,
+#   thermalshutdown, stalldetect }
+
+{% endraw %}</pre>
+
 <pre style="display: none;" id="code-python">{% raw %}
 # ================ EXAMPLE PYTHON CODE - Use chunks as needed ================
 # For full documentation see https://www.wifistepper.com/interfaces
@@ -1027,6 +1126,7 @@ state = MOTOR.getstate()
 {% endraw %}</pre>
             <button class="button is-primary" id="code-copy" style="position: absolute; top: 35px; right: 50px;">{% mdicon content-copy, .baseline %}Copy</button>
             <pre v-bind:style="code.language == 'bash'? {} : {'display': 'none'}" class="code"><code class="language-bash" id="code-bash-render"></code></pre>
+            <pre v-bind:style="code.language == 'powershell'? {} : {'display': 'none'}" class="code"><code class="language-powershell" id="code-powershell-render"></code></pre>
             <pre v-bind:style="code.language == 'python'? {} : {'display': 'none'}" class="code"><code class="language-python" id="code-python-render"></code></pre>
         </div>
     </div>
@@ -1272,6 +1372,12 @@ state = MOTOR.getstate()
                     var dst = document.getElementById('code-bash-render');
                     dst.textContent = src.textContent;
                     Prism.highlightElement(dst);
+					
+                } else if (this.code.language == 'powershell') {
+                    var src = document.getElementById('code-powershell');
+                    var dst = document.getElementById('code-powershell-render');
+                    dst.textContent = src.textContent;
+                    Prism.highlightElement(dst);					
 
                 } else if (this.code.language == 'python') {
                     var src = document.getElementById('code-python');
@@ -1530,6 +1636,7 @@ state = MOTOR.getstate()
     new ClipboardJS('#code-copy', {
         text: function(trigger) {
             if (app.code.language == 'bash')    return document.getElementById('code-bash').textContent;
+            if (app.code.language == 'powershell')    return document.getElementById('code-powershell').textContent;
             if (app.code.language == 'python')  return document.getElementById('code-python').textContent;
             return "";
         }
