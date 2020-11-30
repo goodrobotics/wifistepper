@@ -716,7 +716,8 @@ function Get-StepperConfig {
 function Reset-StepperPosition {
 <#
 .SYNOPSIS
-    This functions resets the Stepper motor using the Gountil command. It resets with switch input get drawn to low.
+    This functions resets the Stepper motor using the Gountil command with the -switch parameter set or it will reset the position at it's current position. 
+    It resets with switch input get drawn to low.
 
 .DESCRIPTION
     Reset-StepperPostion resest the stepper zero position to a point when a sensor or switch draws the SW pin on the WiFi controller
@@ -753,33 +754,41 @@ function Reset-StepperPosition {
     Param (
         [Parameter(Mandatory)]
         [string]$Stepper,
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName=’switch’)]
+        [switch]$Switch,
+        [Parameter(Mandatory,ParameterSetName=’switch’)]
         [string]$ResetSpeed,
+        [Parameter(Mandatory,ParameterSetName=’switch’)] [ValidateSet("forward","reverse")]
+        [string]$direction = "forward",
         [ValidateNotNullOrEmpty()]
         [int]$Timeout = 120
 
 )   
-    ## Reset Position Setting
-    Start-Job -Name ResetPos -arg $Stepper,$ResetSpeed -ScriptBlock {
-        param($Stepper,$ResetSpeed)
-        # Stepper Movement Speed
-        Invoke-RestMethod -URI  "http://$Stepper/api/motor/gountil?action=reset&dir=forward&stepss=$ResetSpeed" | Out-Null
-        # Check if complete each half of second
-        while ( (Invoke-RestMethod -URI  "http://$stepper/api/motor/state").movement -ne "idle") { Start-sleep -Milliseconds 250 } #end while
-        return $true
-    } #end Scriptblock
-    # Wait for timeout if trigger is not hit 
-    wait-job -name ResetPos -timeout $Timeout  
-    receive-job -name ResetPos -EA Silentlycontinue
-    Remove-Job -name ResetPos 
+    if ($switch) {
+        ## Reset Position Setting
+        Start-Job -Name ResetPos -arg $Stepper,$ResetSpeed -ScriptBlock {
+            param($Stepper,$ResetSpeed)
+            # Stepper Movement Speed
+            Invoke-RestMethod -URI  "http://$Stepper/api/motor/gountil?action=reset&dir=$Direction&stepss=$ResetSpeed" | Out-Null
+            # Check if complete each half of second
+            while ( (Invoke-RestMethod -URI  "http://$stepper/api/motor/state").movement -ne "idle") { Start-sleep -Milliseconds 250 } #end while
+            return $true
+        } #end Scriptblock
+        # Wait for timeout if trigger is not hit 
+        wait-job -name ResetPos -timeout $Timeout  
+        receive-job -name ResetPos -EA Silentlycontinue
+        Remove-Job -name ResetPos 
 
-    if (Test-StepperBusy -Stepper $Stepper) {  
-        ## ERROR MODE
-        Move-StepperError -Stepper $Stepper
-    }#endif Wait for Position reset
-    
-    #if Everything works move it back to Pos 0 (level and set this as the "top"
-    Move-stepperMotor -Stepper $Stepper -Angle 0
+        if (Test-StepperBusy -Stepper $Stepper) {  
+            ## ERROR MODE
+            Move-StepperError -Stepper $Stepper
+        }#endif Wait for Position reset
+        
+        #if Everything works move it back to Pos 0 (level and set this as the "top"
+        Move-stepperMotor -Stepper $Stepper -Angle 0
+    } else {
+        Invoke-RestMethod -URI  "http://$Stepper/api/motor/resetpos" | Out-Null
+    }
 } # end function RESET-stepperpostion
 
 function Test-StepperBusy {
@@ -820,7 +829,7 @@ function Test-StepperBusy {
     if ($stepperSTATUS.movement -ne "idle") { return $true } else { return $false }
 } # end function Tes-SetpperComms
 
-function Move-StepperAngle {
+function Move-StepperMotor {
 <#
 .SYNOPSIS
     This functions Stepper motor using the Goto command. It converts an angle to steps based on Microsteps setting configured in the controller.
@@ -833,7 +842,16 @@ function Move-StepperAngle {
     The remote stepper controller to control.
 
 .PARAMETER Angle
-    The new angle to move to, angles larger then 360 are allowed. The Angle is calculated based on the current MicroSteps setting in the Controller.
+    The new absolute angle to move to, angles larger then 360 are allowed. The Angle is calculated based on the current MicroSteps setting in the Controller.
+
+.PARAMETER Postion
+    The new absolute Position to move to in Steps. This is relative to the current Microstepping settings in the controller.
+
+.PARAMETER RelPosition
+    The new relative Postion to move to. Negative numbers are in the reverse direction.
+
+.PARAMETER RelAngle
+    The new relative Angle to move to based on the current programmed Microsteps. Negative numbers are in the reverse direction
 
 .PARAMETER TimeOut
     The amount wait until timing out and entering an error mode. The default is 120 seconds.
@@ -860,8 +878,14 @@ function Move-StepperAngle {
     param (
         [Parameter(Mandatory)]
         [string]$Stepper,
-        [Parameter(Mandatory)]
+        [Parameter(ParameterSetName=’angle’)]
         [float]$Angle,
+        [Parameter(ParameterSetName=’relangle’)]
+        [float]$RelAngle,
+        [Parameter(ParameterSetName=’position’)]
+        [int32]$Position,
+        [Parameter(ParameterSetName=’relposition’)]
+        [int32]$RelPosition,
         [ValidateNotNullOrEmpty()]
         [int]$Timeout = 120
 )   
@@ -875,16 +899,36 @@ function Move-StepperAngle {
         Catch {
             Write-Warning -Message "Can not Talk to Stepper - Comm check"
         }
-        ## Set StepSize
+        ## Set StepSize, Current Position
         Try {
             $MicroStepSize = $(Invoke-RestMethod -URI "http://$stepper/api/motor/get").stepsize
+            $currentPosition = $(Invoke-RestMethod -URI "http://$stepper/api/motor/get").pos
         } #end Try
         Catch {
             Write-Warning -Message "Can not Talk to Stepper - get config"
         }
 
-        # Calculate Desired End Postion from Angle
-        $pos = $Angle/360*200*$MicroStepSize
+        $ParamSetName = $PsCmdLet.ParameterSetName
+
+        Switch ($ParamSetName) {
+            angle {
+                # Calculate Desired End Postion from Angle
+                $pos = $Angle/360*200*$MicroStepSize
+            }
+            relangle {
+                #Calculate Desired End angle from Relative Angle
+                $relpos = $RelAngle/360*200*$MicroStepSize
+                $pos = $currentPosition + $RelPos
+            }
+            position {
+                # Not Much to do here.
+                $pos = $Position
+            }
+            relposition {
+                # Move so many steps
+                $pos = $currentPosition + $RelPosition
+            }
+        } #end Switch
 
 
     } ## END BEGIN
@@ -918,5 +962,5 @@ Export-ModuleMember -Function Write-StepperConfig
 Export-ModuleMember -Function Get-StepperConfig
 Export-ModuleMember -Function Reset-StepperPosition
 Export-ModuleMember -Function Test-StepperBusy
-Export-ModuleMember -Function Move-StepperAngle
+Export-ModuleMember -Function Move-StepperMotor
 #Export-ModuleMember -Function 
