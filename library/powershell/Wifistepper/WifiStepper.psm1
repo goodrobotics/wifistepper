@@ -1,6 +1,8 @@
 ﻿## TODOs:
 ## O Enable Credencial REST methods
-## O Enable Daisy Chaining
+
+## DONE:
+## x Enable Daisy Chaining
 
 
 function Get-StepperPos {
@@ -15,6 +17,9 @@ function Get-StepperPos {
 
 .PARAMETER Stepper
     The remote stepper controller to check the position on.
+
+.PARAMETER Target
+    Dasiy Chained Stepper to operate upon.
 
 .EXAMPLE
      Get-StepperPos -Stepper 172.17.17.2
@@ -36,10 +41,20 @@ function Get-StepperPos {
 
    [CmdletBinding()]
     Param (
-        [Parameter(Mandatory)]
-        [string]$Stepper
+        [Parameter(Mandatory)] [string]$Stepper,
+        [ValidateNotNullOrEmpty()] [int]$target = 0
+
 )   
-    $stepperSTATUS = Invoke-RestMethod -URI  "http://$stepper/api/motor/state"
+    if ($target -ne 0 ) {
+        $targetREST = "?target=$target"
+        $targetRESTappend = "&target=$target"
+
+    } else {
+        $targetREST = ''
+        $targetRESTappend = ''
+    }
+
+    $stepperSTATUS = Invoke-RestMethod -URI  "http://$stepper/api/motor/state$targetREST"
     Return $stepperSTATUS.pos
 } # end Function get-stepperPos
 
@@ -58,6 +73,9 @@ function Move-StepperError {
 
 .PARAMETER Move
     The amount to move forward and backward each 2 seconds. The Default Value is 300 Steps, at the current MicroStep size.
+
+.PARAMETER Target
+    Dasiy Chained Stepper to operate upon.
 
 .EXAMPLE
      Move-StepperError -Stepper 172.17.17.2 
@@ -81,19 +99,30 @@ function Move-StepperError {
         [Parameter(Mandatory)]
         [string]$Stepper,
         [ValidateNotNullOrEmpty()]
-        [int]$Move = 300
+        [int]$Move = 300,
+        [ValidateNotNullOrEmpty()] [int]$target = 0
 
 )   
+    if ($target -ne 0 ) {
+        $targetREST = "?target=$target"
+        $targetRESTappend = "&target=$target"
+
+    } else {
+        $targetREST = ''
+        $targetRESTappend = ''
+    }
+
+
     # Emergency Stop
     $STOP_HIZ="true"
     $STOP_SOFT="true"
-    Invoke-RestMethod -URI  "http://$stepper/api/motor/estop?hiz=$STOP_HIZ&soft=$STOP_SOFT" | out-null
-    $stepperSTATUS = Invoke-RestMethod -URI  "http://$stepper/api/motor/state"
+    Invoke-RestMethod -URI  "http://$stepper/api/motor/estop?hiz=$STOP_HIZ&soft=$STOP_SOFT$($targetRESTappend)" | out-null
+    $stepperSTATUS = Invoke-RestMethod -URI  "http://$stepper/api/motor/state$targetREST"
     while ($true) {
         $positionEMER = $stepperSTATUS.pos
-        Invoke-RestMethod -URI  "http://$stepper/api/motor/goto?pos=$($positionEMER+$Move)" | out-null
+        Invoke-RestMethod -URI  "http://$stepper/api/motor/goto?pos=$($positionEMER+$Move)$targetRESTappend" | out-null
         Start-Sleep -seconds 2
-        Invoke-RestMethod -URI  "http://$stepper/api/motor/goto?pos=$positionEMER" | out-null
+        Invoke-RestMethod -URI  "http://$stepper/api/motor/goto?pos=$positionEMER($targetRESTappend)" | out-null
     }
     
 } #end function move-steppererror
@@ -109,6 +138,9 @@ function Test-StepperComms {
 
 .PARAMETER Stepper
     The remote stepper controller to test communication on.
+
+.PARAMETER Target
+    Dasiy Chained Stepper to operate upon.
 
 .EXAMPLE
      Test-StepperComms -Stepper 172.17.17.2
@@ -130,9 +162,21 @@ function Test-StepperComms {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory)]
-        [string]$Stepper
+        [string]$Stepper,
+        [ValidateNotNullOrEmpty()] [int]$target = 0
+
 )   
-    $stepperSTATUS = Invoke-RestMethod -URI  "http://$Stepper/api/ping" 
+    if ($target -ne 0 ) {
+        $targetREST = "?target=$target"
+        $targetRESTappend = "&target=$target"
+
+    } else {
+        $targetREST = ''
+        $targetRESTappend = ''
+    }
+
+ 
+    $stepperSTATUS = Invoke-RestMethod -URI  "http://$Stepper/api/ping$targetREST" 
     if ($stepperSTATUS.data -eq "pong") { return $true } else { return $false }
 } # end function Test-SetpperComms
 
@@ -171,7 +215,6 @@ function Write-StepperConfig {
     at the driver MOSFETS) is considered an over voltage event. Range Available 0 - 1000 mV.
     FACTORY DEFAULT: 500 mV
 
-
 .PARAMETER OcdShutdown
     Over Current Shutdown Enabled - When enabled, an Over Current flag (triggered by the Over 
     Current Detection Threshold) with shut down the bridges to prevent damage. 
@@ -191,7 +234,6 @@ function Write-StepperConfig {
     Acceleration - Defines how much acceleration to speed up the motor when commanding 
     higher speeds. Range Available 14.55 - 59590 steps/s^2
     FACTORY DEFAULT: 1000 Steps/s^2
-
     
 .PARAMETER Decel
     Deceleration - Defines how much deceleration to slow down the motor when commanding 
@@ -343,6 +385,9 @@ function Write-StepperConfig {
     Range available 0.0 - 0.4 %.
     FACTORY DEFAULT: 0.0615 %
 
+.PARAMETER Target
+    Dasiy Chained Stepper to operate upon.
+
 .EXAMPLE
      Write-StepperConfig -Stepper $WIFISTEPPER -mode current -StepSize 16 -Ocd 500 -OcdShutdown true -MaxSpeed 2000 -Accel 50 -Decel 50 
 
@@ -432,10 +477,22 @@ function Write-StepperConfig {
         [ValidateRange(0,0.4)]
         [float]$VMBackEMFSlopeHAccel,
         [ValidateRange(0,0.4)]
-        [float]$VMBackEMFSlopeHDeccel
-    )   
+        [float]$VMBackEMFSlopeHDeccel,
+        [ValidateNotNullOrEmpty()] [int]$target = 0
+
+)   
+
 
     BEGIN {
+        if ($target -ne 0 ) {
+            $targetREST = "?target=$target"
+            $targetRESTappend = "&target=$target"
+
+        } else {
+            $targetREST = ''
+            $targetRESTappend = ''
+        }
+
         # Init Variables
         [int]$i = 0
         ## Test Commnucation to Stepper
@@ -480,9 +537,13 @@ function Write-StepperConfig {
         if ($PSBoundParameters.ContainsKey('VMBackEMFSlopeHDeccel')) {   $BaseURI = $BaseURI + "vm_bemf_slopehdec=$VMBackEMFSlopeHDeccel&"}
         if ($PSBoundParameters.ContainsKey('Reverse')) {   $BaseURI = $BaseURI + "reverse=$Reverse&"}
         if ($PSBoundParameters.ContainsKey('Save')) {   $BaseURI = $BaseURI + "save=$Save&"}
+        
         # Remove trailing &
         ##
         $URI = $BaseURI -replace '&$',''
+        ## Add in Append
+        $URI = $URI + $targetRESTappend
+
     } ## END BEGIN
     PROCESS {
         ## Configure the Stepper Controller
@@ -665,6 +726,9 @@ function Get-StepperConfig {
     voltage to compensate for Back EMF during fast speed operation on deceleration phase.
     Range available 0.0 - 0.4 %.
 
+.PARAMETER Target
+    Dasiy Chained Stepper to operate upon.
+
 .EXAMPLE
      get-StepperConfig -Stepper $WIFISTEPPER 
 
@@ -681,22 +745,36 @@ function Get-StepperConfig {
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Mandatory)]
-        [string]$Stepper
-    )   
+        [string]$Stepper,
+        [ValidateNotNullOrEmpty()] [int]$target = 0
+
+)   
+
 
     BEGIN {
+        if ($target -ne 0 ) {
+            $targetREST = "?target=$target"
+            $targetRESTappend = "&target=$target"
+            $targetRESTparam = " -target $target "
+
+        } else {
+            $targetREST = ''
+            $targetRESTappend = ''
+            $targetRESTparam = ''
+        }
+  
         # Init Variables
         $StepperConfig = ''
         ## Test Commnucation to Stepper
         Try {
-            Test-StepperComms -Stepper $stepper -ErrorAction Stop | Out-Null
+            Test-StepperComms -Stepper $stepper -ErrorAction Stop $targetRESTparam | Out-Null
         } #end Try
         Catch {
             Write-Warning -Message "Can not Talk to Stepper - Comm check"
         }
 
         #create URI for REST request
-        $URI = "http://$Stepper/api/motor/get"
+        $URI = "http://$Stepper/api/motor/get$targetREST"
 		
     } ## END BEGIN
     PROCESS {
@@ -733,6 +811,9 @@ function Reset-StepperPosition {
 .PARAMETER TimeOut
     The amount wait until timing out and entering an error mode. The default is 120 seconds.
 
+.PARAMETER Target
+    Dasiy Chained Stepper to operate upon.
+
 .EXAMPLE
      Reset-StepperPostion -Stepper 172.17.17.2 
 
@@ -761,17 +842,27 @@ function Reset-StepperPosition {
         [Parameter(Mandatory,ParameterSetName=’switch’)] [ValidateSet("forward","reverse")]
         [string]$direction = "forward",
         [ValidateNotNullOrEmpty()]
-        [int]$Timeout = 120
+        [int]$Timeout = 120,
+        [ValidateNotNullOrEmpty()] [int]$target = 0
 
 )   
+    if ($target -ne 0 ) {
+        $targetREST = "?target=$target"
+        $targetRESTappend = "&target=$target"
+
+    } else {
+        $targetREST = ''
+        $targetRESTappend = ''
+    }
+  
     if ($switch) {
         ## Reset Position Setting
         Start-Job -Name ResetPos -arg $Stepper,$ResetSpeed -ScriptBlock {
             param($Stepper,$ResetSpeed)
             # Stepper Movement Speed
-            Invoke-RestMethod -URI  "http://$Stepper/api/motor/gountil?action=reset&dir=$Direction&stepss=$ResetSpeed" | Out-Null
+            Invoke-RestMethod -URI  "http://$Stepper/api/motor/gountil?action=reset&dir=$Direction&stepss=$($ResetSpeed)$targetRESTappend" | Out-Null
             # Check if complete each half of second
-            while ( (Invoke-RestMethod -URI  "http://$stepper/api/motor/state").movement -ne "idle") { Start-sleep -Milliseconds 250 } #end while
+            while ( (Invoke-RestMethod -URI  "http://$Stepper/api/motor/state$targetREST").movement -ne "idle") { Start-sleep -Milliseconds 250 } #end while
             return $true
         } #end Scriptblock
         # Wait for timeout if trigger is not hit 
@@ -787,7 +878,7 @@ function Reset-StepperPosition {
         #if Everything works move it back to Pos 0 (level and set this as the "top"
         Move-stepperMotor -Stepper $Stepper -Angle 0
     } else {
-        Invoke-RestMethod -URI  "http://$Stepper/api/motor/resetpos" | Out-Null
+        Invoke-RestMethod -URI  "http://$Stepper/api/motor/resetpos$targetREST" | Out-Null
     }
 } # end function RESET-stepperpostion
 
@@ -802,6 +893,9 @@ function Test-StepperBusy {
 
 .PARAMETER Stepper
     The remote stepper controller to test communication on.
+
+.PARAMETER Target
+    Dasiy Chained Stepper to operate upon.
 
 .EXAMPLE
      Test-StepperBusy -Stepper 172.17.17.2
@@ -823,9 +917,19 @@ function Test-StepperBusy {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory)]
-        [string]$Stepper
+        [string]$Stepper,
+        [ValidateNotNullOrEmpty()] [int]$target = 0
+
 )   
-    $stepperSTATUS = Invoke-RestMethod -URI  "http://$stepper/api/motor/state"
+    if ($target -ne 0 ) {
+        $targetREST = "?target=$target"
+        $targetRESTappend = "&target=$target"
+
+    } else {
+        $targetREST = ''
+        $targetRESTappend = ''
+    }  
+    $stepperSTATUS = Invoke-RestMethod -URI  "http://$stepper/api/motor/state$targetREST"
     if ($stepperSTATUS.movement -ne "idle") { return $true } else { return $false }
 } # end function Tes-SetpperComms
 
@@ -856,11 +960,23 @@ function Move-StepperMotor {
 .PARAMETER TimeOut
     The amount wait until timing out and entering an error mode. The default is 120 seconds.
 
+.PARAMETER Target
+    Dasiy Chained Stepper to operate upon.
+
 .EXAMPLE
      Move-StepperMotor -Stepper 172.17.17.2 -Angle 90
 
 .EXAMPLE
      Move-StepperMotor -Stepper wx100.local -Angle 20 -Timeout 60
+
+.EXAMPLE
+     Move-StepperMotor -Stepper wx100.local -RelAngle -10 -Timeout 60
+
+.EXAMPLE
+     Move-StepperMotor -Stepper wx100.local -Position 2000
+
+.EXAMPLE
+     Move-StepperMotor -Stepper wx100.local -RelPosition -200
 
 .INPUTS
     String, Interger
@@ -887,22 +1003,36 @@ function Move-StepperMotor {
         [Parameter(ParameterSetName=’relposition’)]
         [int32]$RelPosition,
         [ValidateNotNullOrEmpty()]
-        [int]$Timeout = 120
+        [int]$Timeout = 120,
+        [ValidateNotNullOrEmpty()] [int]$target = 0
+
 )   
+
     BEGIN {
+        if ($target -ne 0 ) {
+            $targetREST = "?target=$target"
+            $targetRESTappend = "&target=$target"
+            $targetRESTparam = " -target $target "
+
+        } else {
+            $targetREST = ''
+            $targetRESTappend = ''
+            $targetRESTparam = ''
+        }
+   
         # Init Variables
         [int]$i = 0
         ## Test Commnucation to Stepper
         Try {
-            Test-StepperComms -Stepper $stepper -ErrorAction Stop
+            Test-StepperComms -Stepper $stepper -ErrorAction Stop $targetRESTparam
         } #end Try
         Catch {
             Write-Warning -Message "Can not Talk to Stepper - Comm check"
         }
         ## Set StepSize, Current Position
         Try {
-            $MicroStepSize = $(Invoke-RestMethod -URI "http://$stepper/api/motor/get").stepsize
-            $currentPosition = $(Invoke-RestMethod -URI "http://$stepper/api/motor/get").pos
+            $MicroStepSize = $(Invoke-RestMethod -URI "http://$stepper/api/motor/get$targetREST").stepsize
+            $currentPosition = $(Invoke-RestMethod -URI "http://$stepper/api/motor/get$targetREST").pos
         } #end Try
         Catch {
             Write-Warning -Message "Can not Talk to Stepper - get config"
@@ -936,16 +1066,16 @@ function Move-StepperMotor {
         ## move the motor
         Try {
             # Move Motor to Specified Position
-            Invoke-RestMethod -URI  "http://$Stepper/api/motor/goto?pos=$pos" | Out-null
+            Invoke-RestMethod -URI  "http://$Stepper/api/motor/goto?pos=$($pos)$targetRESTappend" | Out-null
             # Wait while stepper is Busy
-            while ($(Test-StepperBusy -Stepper $Stepper)) { 
+            while ($(Test-StepperBusy -Stepper $Stepper $targetRESTparam)) { 
                 Start-Sleep -Seconds 1
                 $i++
-                if( [int]$i -gt [int]$Timeout ) { Move-StepperError -Stepper $Stepper } #end if 
+                if( [int]$i -gt [int]$Timeout ) { Move-StepperError -Stepper $Stepper $targetRESTparam} #end if 
             } #end while
             #TODO Create Stepper Postion test (Test-StepperPosition function)
             #return True if stepper is at the correct location
-            $stepperSTATUS = Invoke-RestMethod -URI  "http://$Stepper/api/motor/state"
+            $stepperSTATUS = Invoke-RestMethod -URI  "http://$Stepper/api/motor/state$TargetREST"
             if (($stepperSTATUS.pos) -eq $pos ) { Return $true } else { Return $false }
         } #end Try
         Catch {
