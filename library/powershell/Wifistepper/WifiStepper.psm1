@@ -1110,7 +1110,7 @@ function Reset-StepperPosition {
         [switch]$Switch,
         [Parameter(Mandatory,ParameterSetName=’switch’)]
         [string]$ResetSpeed,
-        [Parameter(Mandatory,ParameterSetName=’switch’)] [ValidateSet("forward","reverse")]
+        [Parameter(ParameterSetName=’switch’)] [ValidateSet("forward","reverse")]
         [string]$direction = "forward",
         [ValidateNotNullOrEmpty()]
         [int]$Timeout = 120,
@@ -1154,9 +1154,9 @@ function Reset-StepperPosition {
             return $true
         } #end Scriptblock
         # Wait for timeout if trigger is not hit 
-        wait-job -name ResetPos -timeout $Timeout  
-        receive-job -name ResetPos -EA Silentlycontinue
-        Remove-Job -name ResetPos 
+        $result = wait-job -name ResetPos -timeout $Timeout  
+        $result = receive-job -name ResetPos -EA Silentlycontinue
+        $result = Remove-Job -name ResetPos 
 
         if (Test-StepperBusy -Stepper $Stepper) {  
             ## ERROR MODE
@@ -1170,16 +1170,5 @@ function Reset-StepperPosition {
     }
 } # end function RESET-stepperpostion
 
-Export-ModuleMember -Function Test-StepperComms
-Export-ModuleMember -Function Test-StepperBusy
-
-Export-ModuleMember -Function Get-StepperPos
-Export-ModuleMember -Function Get-StepperConfig
-
-Export-ModuleMember -Function Write-StepperConfig
-
-Export-ModuleMember -Function Move-StepperMotor
-Export-ModuleMember -Function Move-StepperError
-Export-ModuleMember -Function Reset-StepperPosition
 
 #Export-ModuleMember -Function 
