@@ -1171,4 +1171,65 @@ function Reset-StepperPosition {
 } # end function RESET-stepperpostion
 
 
+function Move-StepperESTOP {
+<#
+.SYNOPSIS
+    This functions puts the Stepper motor into a Emergency Stop using the WIFI Stepper Controller
+
+.DESCRIPTION
+    Move-StepperESTOP is a function that Stops the Stepper motor whereever it may be and clears the command queue
+
+.PARAMETER Stepper
+    The remote stepper controller to put into ESTOP Mode.
+
+.PARAMETER Soft
+    Use deceleration phase to stop motor. When false, motor will perform a Hard Stop (stops motor immediately).
+
+.PARAMETER HiZ
+    Disable the motor bridges (put in High-Impedance state) when stopped. When false, motor bridges will remain active.
+
+.EXAMPLE
+     Move-StepperEStop -Stepper 172.17.17.2 
+
+.EXAMPLE
+     Move-StepperEStop -Stepper wx100.local -Soft -Hiz
+
+.INPUTS
+    String
+
+.OUTPUTS
+    None
+
+.NOTES
+    Author:  Jason Kowalczyk
+.LINK 
+    https://wifistepper.com
+#>
+    [CmdletBinding()]
+    Param (
+        [Parameter(Mandatory)]
+        [string]$Stepper,
+        [switch]$Soft,
+        [switch]$HiZ
+
+)   
+    if (-not $soft) { $soft = $false }
+
+    if (-not $HiZ) { $HiZ = $false }
+
+
+     ## Test Commnucation to Stepper
+    Try {
+        Test-StepperComms -Stepper $stepper -ErrorAction Stop $targetRESTparam | Out-Null
+    } #end Try
+    Catch {
+        Write-Warning -Message "Can not Talk to Stepper - Comm check"
+        Return $false
+    }
+ 
+    # Emergency Stop (SOFT)
+    Invoke-RestMethod -URI  "http://$stepper/api/motor/estop?hiz=$HiZ&soft=$soft$($targetRESTappend)" | out-null
+    
+} #end function move-steppererror
+
 #Export-ModuleMember -Function 
