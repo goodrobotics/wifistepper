@@ -941,11 +941,11 @@ function Move-StepperMotor {
         Switch ($ParamSetName) {
             angle {
                 # Calculate Desired End Postion from Angle
-                $pos = $Angle/360*200*$MicroStepSize
+                $pos = [int]$($Angle/360*200*$MicroStepSize)
             }
             relangle {
                 #Calculate Desired End angle from Relative Angle
-                $relpos = $RelAngle/360*200*$MicroStepSize
+                $relpos = [int]$($RelAngle/360*200*$MicroStepSize)
                 $pos = $currentPosition + $RelPos
             }
             position {
