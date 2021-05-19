@@ -40,11 +40,13 @@
 #define CMD_RUNQUEUE    (CP_MOTOR | 0x12)
 #define CMD_SETSIGNAL   (CP_MOTOR | 0x13)
 #define CMD_INCSIGNAL   (CP_MOTOR | 0x14)
+#define CMD_STOPSWITCH  (CP_MOTOR | 0x15)
 
 #define CMD_EMPTYQUEUE  (CP_QUEUE | 0x00)
 #define CMD_COPYQUEUE   (CP_QUEUE | 0x01)
 #define CMD_SAVEQUEUE   (CP_QUEUE | 0x02)
 #define CMD_LOADQUEUE   (CP_QUEUE | 0x03)
+//#define CMD_TRIGQUEUE   (CP_QUEUE | 0x04)
 
 #define SELF            (0x00)
 
@@ -234,6 +236,10 @@ static void daisy_masterconsume(int8_t target, uint8_t q, id_t id, uint8_t opcod
       if (!state.error.errored && slavestate->error.errored) memcpy(&state.error, &slavestate->error, sizeof(error_state));
       return;
     }
+    /*case CMD_TRIGQUEUE: {
+      daisy_expectlen(sizeof());
+      return;
+    }*/
   }
 }
 
@@ -395,6 +401,13 @@ static void daisy_slaveconsume(uint8_t q, id_t id, uint8_t opcode, void * data, 
       daisy_expectlen(sizeof(cmd_waitsw_t));
       cmd_waitsw_t * cmd = (cmd_waitsw_t *)data;
       cmd_waitswitch(queue, id, cmd->state);
+      daisy_ack(q, id);
+      break;
+    }
+    case CMD_STOPSWITCH: {
+      daisy_expectlen(sizeof(cmd_stopsw_t));
+      cmd_stopsw_t * cmd = (cmd_stopsw_t *)data;
+      cmd_stopswitch(queue, id, cmd->state);
       daisy_ack(q, id);
       break;
     }
@@ -684,6 +697,12 @@ bool daisy_waitms(uint8_t target, uint8_t q, id_t id, uint32_t ms) {
 
 bool daisy_waitswitch(uint8_t target, uint8_t q, id_t id, bool state) {
   cmd_waitsw_t * cmd = (cmd_waitsw_t *)daisy_alloc(target, q, id, CMD_WAITSWITCH, sizeof(cmd_waitsw_t));
+  if (cmd != NULL) *cmd = { .state = state };
+  return daisy_pack(cmd) != NULL;
+}
+
+bool daisy_stopswitch(uint8_t target, uint8_t q, id_t id, bool state) {
+  cmd_stopsw_t * cmd = (cmd_stopsw_t *)daisy_alloc(target, q, id, CMD_STOPSWITCH, sizeof(cmd_stopsw_t));
   if (cmd != NULL) *cmd = { .state = state };
   return daisy_pack(cmd) != NULL;
 }

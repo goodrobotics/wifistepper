@@ -482,6 +482,13 @@ void api_initmotor() {
     int pos = server.arg("pos").toInt();
     ps_direction dir = parse_direction(server.arg("dir"), FWD);
     m_goto(target, queue, id, pos, server.hasArg("dir"), dir);
+
+    if (server.hasArg("stopswitch")) {
+      bool state = server.arg("stopswitch") == "closed";
+      id = nextid();
+      m_stopswitch(target, queue, id, state);
+    }
+    
     server.send(200, "application/json", json_okid(id));
   });
   server.on("/api/motor/gountil", HTTP_GET, [](){
@@ -668,6 +675,29 @@ void api_initmotor() {
     int targetqueue = server.arg("targetqueue").toInt();
     id_t id = nextid();
     m_runqueue(target, queue, id, targetqueue);
+    server.send(200, "application/json", json_okid(id));
+  });
+  server.on("/api/motor/triggerqueue", HTTP_GET, [](){
+    add_headers()
+    check_auth()
+    if (!server.hasArg("queue")) {
+      server.send(200, "application/json", json_error("queue arg must be specified"));
+      return;
+    }
+    if (!server.hasArg("target")) {
+      server.send(200, "application/json", json_error("target arg must be specified"));
+      return;
+    }
+    if (!server.hasArg("targetqueue")) {
+      server.send(200, "application/json", json_error("targetqueue arg must be specified"));
+      return;
+    }
+    int queue = server.arg("queue").toInt();
+    int target = server.arg("target").toInt();
+    int targetqueue = server.arg("targetqueue").toInt();
+    id_t id = nextid();
+    cmd_trigqueue(queue_get(queue), id, target, targetqueue);
+    //server.send(200, "application/json", String("{\"status\":\"ok\",\"id\":") + id + ",\"queue\":" + queue + ",\"target\":" + target + ",\"targetqueue\":" + targetqueue + "}");
     server.send(200, "application/json", json_okid(id));
   });
   server.on("/api/queue/empty", HTTP_GET, [](){

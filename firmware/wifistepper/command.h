@@ -29,6 +29,8 @@
 #define CMD_RUNQUEUE    (QPRE_NONE | 0x12)
 #define CMD_SETSIGNAL   (QPRE_NONE | 0x13)
 #define CMD_INCSIGNAL   (QPRE_NONE | 0x14)
+#define CMD_STOPSWITCH  (QPRE_STATUS | 0x15)
+#define CMD_TRIGQUEUE   (QPRE_NONE | 0x16)
 
 typedef struct ispacked {
   uint32_t ms;

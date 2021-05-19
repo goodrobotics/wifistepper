@@ -222,6 +222,24 @@ void cmd_loop(unsigned long now) {
         consume += sizeof(cmd_waitsw_t);
         break;
       }
+      case CMD_STOPSWITCH: {
+        cmd_stopsw_t * cmd = (cmd_stopsw_t *)Qcmd;
+        if (!state.motor.status.busy) {
+          // Break if not busy
+          consume += sizeof(cmd_waitsw_t);
+          break;
+        }
+        
+        if (cmd->state != state.motor.status.user_switch) {
+          // Switch not pressed, return
+          return;
+        }
+
+        // Switch pressed, issue stop
+        ps_softhiz();
+        consume += sizeof(cmd_waitsw_t);
+        break;
+      }
       case CMD_RUNQUEUE: {
         cmd_runqueue_t * cmd = (cmd_runqueue_t *)Qcmd;
         consume += sizeof(cmd_runqueue_t);
@@ -254,6 +272,12 @@ void cmd_loop(unsigned long now) {
         state.signal.value += cmd->value;
         state.signal.modified = millis();
         consume += sizeof(cmd_signal_t);
+        break;
+      }
+      case CMD_TRIGQUEUE: {
+        cmd_trigqueue_t * cmd = (cmd_trigqueue_t *)Qcmd;
+        m_runqueue(cmd->target, 0, nextid(), cmd->targetqueue);
+        consume += sizeof(cmd_trigqueue_t);
         break;
       }
     }
@@ -408,6 +432,18 @@ bool cmd_waitswitch(queue_t * queue, id_t id, bool state) {
 bool cmd_runqueue(queue_t * queue, id_t id, uint8_t targetqueue) {
   cmd_runqueue_t * cmd = (cmd_runqueue_t *)cmd_alloc(queue, id, CMD_RUNQUEUE, sizeof(cmd_runqueue_t));
   if (cmd != NULL) *cmd = { .targetqueue = targetqueue };
+  return cmd != NULL;
+}
+
+bool cmd_trigqueue(queue_t * queue, id_t id, uint8_t target, uint8_t targetqueue) {
+  cmd_trigqueue_t * cmd = (cmd_trigqueue_t *)cmd_alloc(queue, id, CMD_TRIGQUEUE, sizeof(cmd_trigqueue_t));
+  if (cmd != NULL) *cmd = { .target = target, .targetqueue = targetqueue };
+  return cmd != NULL;
+}
+
+bool cmd_stopswitch(queue_t * queue, id_t id, bool state) {
+  cmd_stopsw_t * cmd = (cmd_stopsw_t *)cmd_alloc(queue, id, CMD_STOPSWITCH, sizeof(cmd_stopsw_t));
+  if (cmd != NULL) *cmd = { .state = state };
   return cmd != NULL;
 }
 
