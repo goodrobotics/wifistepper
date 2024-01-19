@@ -5,9 +5,12 @@ import socket
 import json
 import hashlib
 import hmac
-import binascii
+import sys
 
-import Queue as waitqueue
+try:
+    import queue as waitqueue
+except ImportError:  # python2
+    import Queue as waitqueue
 
 class Nack(Exception):
     def __init__(self, message): self.message = message
@@ -28,9 +31,15 @@ class Angle:
     def fromPos(self, pos): return float(pos) / self.coeff
 
 
-def _ascii_encode_dict(data):
-    ascii_encode = lambda x: x.encode('ascii') if isinstance(x, unicode) else x 
-    return dict(map(ascii_encode, pair) for pair in data.items())
+if sys.version_info[0] == 2:
+    def _ascii_encode_dict(data):
+        ascii_encode = lambda x: x.encode('ascii') if isinstance(x, unicode) else x
+        return {key: ascii_encode(value) for key, value in data.items()}
+else:
+    def _ascii_encode_dict(data):
+        ascii_encode = lambda x: x.encode('ascii') if isinstance(x, str) else x
+        return {key: ascii_encode(value) for key, value in data.items()}
+
 
 class _ComCommon:
     _L_MAGIC_1 = (0xAE)
@@ -78,7 +87,7 @@ class _ComCommon:
     _OPCODE_LOADQUEUE = (0x33)
     _OPCODE_ADDQUEUE = (0x34)
     _OPCODE_COPYQUEUE = (0x35)
-    
+
     _OPCODE_GETQUEUE = (0x37)
 
     _SUBCODE_NACK = (0x00)
@@ -153,7 +162,7 @@ class _ComCommon:
 
             elif p_type == self._TYPE_STD:
                 (h_opcode, h_subcode, h_target, h_queue, h_packetid, h_length) = struct.unpack(self._PACK_STD, self.sock.recv(struct.calcsize(self._PACK_STD)))
-                (d_remaining, d_data) = (h_length, '')
+                (d_remaining, d_data) = (h_length, b'')
                 while d_remaining > 0:
                     d_read = self.sock.recv(d_remaining)
                     d_data += d_read
@@ -163,7 +172,7 @@ class _ComCommon:
             elif p_type == self._TYPE_CRYPTO:
                 mac = self.sock.recv(32)
                 (h_opcode, h_subcode, h_target, h_queue, h_packetid, h_length) = struct.unpack(self._PACK_STD, self.sock.recv(struct.calcsize(self._PACK_STD)))
-                (d_remaining, d_data) = (h_length, '')
+                (d_remaining, d_data) = (h_length, b'')
                 while d_remaining > 0:
                     d_read = self.sock.recv(d_remaining)
                     d_data += d_read
@@ -251,11 +260,11 @@ class _ComCommon:
 
     def cmd_getconfig(self, target):
         self._checkconnected()
-        return self._waitreply(self._send(self._OPCODE_GETCONFIG, self._SUBCODE_CMD, target, 0), self._SUBCODE_REPLY).rstrip('\x00')
+        return self._waitreply(self._send(self._OPCODE_GETCONFIG, self._SUBCODE_CMD, target, 0), self._SUBCODE_REPLY).rstrip(b'\x00')
 
     def cmd_getstate(self, target):
         self._checkconnected()
-        return self._waitreply(self._send(self._OPCODE_GETSTATE, self._SUBCODE_CMD, target, 0), self._SUBCODE_REPLY).rstrip('\x00')
+        return self._waitreply(self._send(self._OPCODE_GETSTATE, self._SUBCODE_CMD, target, 0), self._SUBCODE_REPLY).rstrip(b'\x00')
 
     def cmd_stop(self, target, queue, hiz, soft):
         self._checkconnected()
@@ -289,7 +298,7 @@ class _ComCommon:
         b_action = 0x01 if action else 0x00
         b_dir = 0x01 if dir else 0x00
         return self._waitreply(self._send(self._OPCODE_GOUNTIL, self._SUBCODE_CMD, target, queue, struct.pack('<BBf', b_action, b_dir, stepss)), self._SUBCODE_ACK)
-    
+
     def cmd_releasesw(self, target, queue, action, dir):
         self._checkconnected()
         b_action = 0x01 if action else 0x00
@@ -362,7 +371,7 @@ class ComStandard(_ComCommon):
     def __init__(self, host, port, error_callback, **kwargs):
         _ComCommon.__init__(self, host, port, error_callback)
 
-    def _send(self, opcode, subcode, target, queue, data = ''):
+    def _send(self, opcode, subcode, target, queue, data = b''):
         packetid = self._nextid()
         self.sock.send(self._preamble(self._TYPE_STD) + self._header(opcode, subcode, target, queue, packetid, len(data)) + data)
         return packetid
@@ -373,7 +382,7 @@ class ComStandard(_ComCommon):
     def _recv_std(self, opcode, subcode, target, queue, packetid, data):
         if subcode in [self._SUBCODE_ACK, self._SUBCODE_NACK, self._SUBCODE_REPLY]:
             if subcode == self._SUBCODE_ACK: (data,) = struct.unpack('<I', data)
-            if subcode == self._SUBCODE_NACK: data = data.rstrip('\x00')
+            if subcode == self._SUBCODE_NACK: data = data.rstrip(b'\x00')
             if packetid in self.wait_dict:
                 try: self.wait_dict[packetid].put(self.Response(subcode, data), False)
                 except waitqueue.Full: pass
@@ -387,7 +396,7 @@ class ComCrypto(_ComCommon):
         _ComCommon.__init__(self, host, port, error_callback)
         self.__key = hashlib.sha256(key).digest()
 
-    def _send(self, opcode, subcode, target, queue, data = ''):
+    def _send(self, opcode, subcode, target, queue, data = b''):
         packetid = self._nextid()
         payload = self._header(opcode, subcode, target, queue, packetid, len(data)) + data
         calcmac = hmac.new(self.__key, struct.pack('<I', self.nonce) + payload, hashlib.sha256).digest()
@@ -399,7 +408,7 @@ class ComCrypto(_ComCommon):
 
     def _recv_std(self, opcode, subcode, target, queue, packetid, data):
         if subcode == self._SUBCODE_NACK:
-            data = data.rstrip('\x00')
+            data = data.rstrip(b'\x00')
             if packetid in self.wait_dict:
                 try: self.wait_dict[packetid].put(self.Response(subcode, data), False)
                 except waitqueue.Full: pass
@@ -410,7 +419,7 @@ class ComCrypto(_ComCommon):
 
         if subcode in [self._SUBCODE_ACK, self._SUBCODE_NACK, self._SUBCODE_REPLY]:
             if subcode == self._SUBCODE_ACK: (data,) = struct.unpack('<I', data)
-            if subcode == self._SUBCODE_NACK: data = data.rstrip('\x00')
+            if subcode == self._SUBCODE_NACK: data = data.rstrip(b'\x00')
             if packetid in self.wait_dict:
                 resp = self.Response(subcode, data)
                 if not verified: resp = self.Response(self._SUBCODE_NACK, "Bad hmac signature in response (Key error)")
