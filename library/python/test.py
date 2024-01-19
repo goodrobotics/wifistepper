@@ -1,4 +1,5 @@
 import goodrobotics as gr
+import time
 
 s = gr.WifiStepper(host='wsx100.local')
 s.connect()
@@ -11,8 +12,7 @@ s.waitbusy()
 s.stop()
 
 
-import goodrobotics as gr
-s = gr.WifiStepper(proto=gr.ComCrypto, host='wsx100.local', key="newpass1")
+s = gr.WifiStepper(proto=gr.ComCrypto, host='wsx100.local', key=b"newpass1")
 s.connect()
 
 
@@ -24,9 +24,6 @@ s.stop(queue=2)
 s.waitms(1000, queue=2)
 s.runqueue(2, queue=2)
 
-
-import goodrobotics as gr
-import time
 
 s = gr.WifiStepper(host='wsx100.local')
 s.connect()
